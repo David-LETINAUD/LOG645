@@ -1,0 +1,59 @@
+mkdir -p build/
+gcc -Wall -fPIC -m64 -O3 -c src/main.c -o build/main.o
+mkdir -p build/solver/
+gcc -Wall -fPIC -m64 -O3 -c src/solver/solver.c -o build/solver/solver.o
+mkdir -p build/output/
+gcc -Wall -fPIC -m64 -O3 -c src/output/output.c -o build/output/output.o
+mkdir -p build/matrix/
+gcc -Wall -fPIC -m64 -O3 -c src/matrix/matrix.c -o build/matrix/matrix.o
+gcc -Wall -fPIC -m64 -o lab1 build/main.o build/solver/solver.o build/output/output.o build/matrix/matrix.o
+
+>>> 1 0 1
+           0            1            2            3            4            5            6            7 
+           1            2            3            4            5            6            7            8 
+           2            3            4            5            6            7            8            9 
+           3            4            5            6            7            8            9           10 
+           4            5            6            7            8            9           10           11 
+           5            6            7            8            9           10           11           12 
+           6            7            8            9           10           11           12           13 
+           7            8            9           10           11           12           13           14 
+
+Runtime: 0.070524 seconds
+<<<
+>>> 1 5 3
+           5           11           17           23           29           35           41           47 
+          11           17           23           29           35           41           47           53 
+          17           23           29           35           41           47           53           59 
+          23           29           35           41           47           53           59           65 
+          29           35           41           47           53           59           65           71 
+          35           41           47           53           59           65           71           77 
+          41           47           53           59           65           71           77           83 
+          47           53           59           65           71           77           83           89 
+
+Runtime: 0.212874 seconds
+<<<
+>>> 2 0 1
+           0            0            0            0            0            0            0            0 
+           1            1            1            1            1            1            1            1 
+           2            2            2            2            2            2            2            2 
+           3            3            3            3            3            3            3            3 
+           4            4            4            4            4            4            4            4 
+           5            5            5            5            5            5            5            5 
+           6            6            6            6            6            6            6            6 
+           7            7            7            7            7            7            7            7 
+
+Runtime: 0.070806 seconds
+<<<
+>>> 2 5 3
+           5           35          160          610         2115         6945        22070        68720 
+          11           60          250          911         3081         9970        31400        97221 
+          17           85          340         1212         4047        12995        40730       125722 
+          23          110          430         1513         5013        16020        50060       154223 
+          29          135          520         1814         5979        19045        59390       182724 
+          35          160          610         2115         6945        22070        68720       211225 
+          41          185          700         2416         7911        25095        78050       239726 
+          47          210          790         2717         8877        28120        87380       268227 
+
+Runtime: 0.212651 seconds
+<<<
+rm -r build/ lab1
