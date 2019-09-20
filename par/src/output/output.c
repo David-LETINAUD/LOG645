@@ -3,6 +3,7 @@
 
 void printMatrix(int dim, int * matrix) {
     for(int i = 0; i < dim; i += 8) {
+		
     	printf("%12d ", matrix[i]);
     	printf("%12d ", matrix[i + 1]);
     	printf("%12d ", matrix[i + 2]);

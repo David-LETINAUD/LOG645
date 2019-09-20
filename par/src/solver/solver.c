@@ -9,21 +9,33 @@ void solveFirst(int iterations, int rank, int * matrix) {
 	int sum = rank % 8 + rank / 8;
 
     for(int k = 1; k <= iterations; ++k) {
-    	usleep(1000);
+    	// usleep(1000);
         matrix[rank] = matrix[rank] + sum * k;
     }
 }
 
 void solveSecond(int iterations, int rank, int * matrix) {
-	int i = rank % 8;
+	if (rank < 8) {
+		for (int k = 1; k <= iterations; ++k) {
+			// usleep(1000);
+			matrix[rank] = matrix[rank] + rank * k;
+			MPI_Send(&matrix[rank], 1, MPI_INT, rank + 8, k, MPI_COMM_WORLD);
+		}
+	} else {
+		int i = rank % 8;
+		
+		int number = 0;
+		
+		for (int k = 1; k <= iterations; ++k) {
+			MPI_Recv(&number, 1, MPI_INT, rank - 8, k, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			
+			// usleep(1000);
+			int p = i + rank;
+			matrix[p] = matrix[p] + matrix[p - 8];
 
-    for (int k = 1; k <= iterations; ++k) {
-    	usleep(1000);
-    	matrix[i] = matrix[i] + i * k;
-
-    	for (int j = 1; j < 8; ++j) {
-    		usleep(1000);
-    		matrix[i + j] = matrix[i + j] + (matrix[i + j - 1] * k);
-    	}
-    }
+			if (rank < 56) {
+				MPI_Send(&matrix[p], 1, MPI_INT, rank + 8, k, MPI_COMM_WORLD);
+			}
+		}
+	}
 }

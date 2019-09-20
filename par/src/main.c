@@ -49,12 +49,12 @@ int main(int argc, char* argv[]) {
 
     gettimeofday(&timestamp_s, NULL);
 
-    solve(iterations, world_rank, matrix);
+	solve(iterations, world_rank, matrix);
 
     if (problem == 1) {
     	MPI_Gather(&matrix[world_rank], 1, MPI_INT, rbuf, 1, MPI_INT, 0, MPI_COMM_WORLD);
     } else {
-    	MPI_Gather(&matrix[world_rank], 8, MPI_INT, rbuf, 8, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Gather(&matrix[world_rank], 1, MPI_INT, rbuf, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
 
     gettimeofday(&timestamp_e, NULL);
