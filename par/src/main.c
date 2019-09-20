@@ -53,12 +53,12 @@ int main(int argc, char* argv[]) {
     // Finalize the MPI environment.
     MPI_Finalize();
 
+	gettimeofday(&timestamp_e, NULL);
+
     if (world_rank == 0) {
 		printMatrix(DIM, rbuf);
 		printRuntime(timestamp_s, timestamp_e);
     }
     
-    gettimeofday(&timestamp_e, NULL);
-
     return EXIT_SUCCESS;
 }
