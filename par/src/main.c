@@ -25,34 +25,35 @@ int main(int argc, char* argv[]) {
 
     solve = solvers[problem - 1];
 
-    // Initialize the MPI environment
-    MPI_Init(NULL, NULL);
-
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
+	int number;
+	int world_rank;
     int *rbuf = NULL;
 
-    if (world_rank == 0) {
+    MPI_Init(NULL, NULL);
+	gettimeofday(&timestamp_s, NULL);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	
+	if (world_rank == 0) {
     	rbuf = malloc(sizeof(int) * DIM);
     }
-
-	gettimeofday(&timestamp_s, NULL);
-	int number = solve(iterations, world_rank, initialValue);
+	
+	number = solve(iterations, world_rank, initialValue);
 	
     MPI_Gather(&number, 1, MPI_INT, rbuf, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	gettimeofday(&timestamp_e, NULL);
-	
-    // Finalize the MPI environment.
-    MPI_Finalize();
 
     if (world_rank == 0) {
-		printMatrix(DIM, rbuf);
+		if (problem == 1) {
+			printMatrix1(DIM, rbuf);
+		} else {
+			printMatrix2(DIM, rbuf);
+		}
+		
+		gettimeofday(&timestamp_e, NULL);
 		printRuntime(timestamp_s, timestamp_e);
     }
+    
+    MPI_Finalize();
     
     return EXIT_SUCCESS;
 }

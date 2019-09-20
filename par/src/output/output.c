@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-void printMatrix(int dim, int * matrix) {
+void printMatrix1(int dim, int * matrix) {
     for(int i = 0; i < dim; i += 8) {
-		
     	printf("%12d ", matrix[i]);
     	printf("%12d ", matrix[i + 1]);
     	printf("%12d ", matrix[i + 2]);
@@ -12,6 +11,23 @@ void printMatrix(int dim, int * matrix) {
     	printf("%12d ", matrix[i + 5]);
     	printf("%12d ", matrix[i + 6]);
     	printf("%12d ", matrix[i + 7]);
+
+        printf("\n");
+    }
+
+    printf("\n");
+}
+
+void printMatrix2(int dim, int * matrix) {
+    for(int i = 0; i < 8; ++i) {
+    	printf("%12d ", matrix[i]);
+    	printf("%12d ", matrix[i + 8]);
+    	printf("%12d ", matrix[i + 16]);
+    	printf("%12d ", matrix[i + 24]);
+    	printf("%12d ", matrix[i + 32]);
+    	printf("%12d ", matrix[i + 40]);
+    	printf("%12d ", matrix[i + 48]);
+    	printf("%12d ", matrix[i + 56]);
 
         printf("\n");
     }
