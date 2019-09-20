@@ -1,7 +1,7 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
-void solveFirst(int iterations, int rank, int * matrix);
-void solveSecond(int iterations, int rank, int * matrix);
+int solveFirst(int iterations, int rank, int value);
+int solveSecond(int iterations, int rank, int value);
 
 #endif

@@ -9,7 +9,7 @@
 
 #define DIM 64
 
-void (* solve)(int iterations, int rank, int * matrix) = solveFirst;
+int (* solve)(int iterations, int rank, int value) = solveFirst;
 
 int main(int argc, char* argv[]) {
     if(4 != argc) {
@@ -29,8 +29,7 @@ int main(int argc, char* argv[]) {
 
     solve = solvers[problem - 1];
 
-    int * matrix = allocateMatrix(DIM);
-    fillMatrix(DIM, initialValue, matrix);
+	gettimeofday(&timestamp_s, NULL);
 
     // Initialize the MPI environment
     MPI_Init(NULL, NULL);
@@ -47,13 +46,9 @@ int main(int argc, char* argv[]) {
     	rbuf = malloc(sizeof(int) * DIM);
     }
 
-    gettimeofday(&timestamp_s, NULL);
+	int number = solve(iterations, world_rank, initialValue);
 
-	solve(iterations, world_rank, matrix);
-
-    MPI_Gather(&matrix[world_rank], 1, MPI_INT, rbuf, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-    gettimeofday(&timestamp_e, NULL);
+    MPI_Gather(&number, 1, MPI_INT, rbuf, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     // Finalize the MPI environment.
     MPI_Finalize();
@@ -61,8 +56,9 @@ int main(int argc, char* argv[]) {
     if (world_rank == 0) {
 		printMatrix(DIM, rbuf);
 		printRuntime(timestamp_s, timestamp_e);
-		deallocateMatrix(DIM, matrix);
     }
+    
+    gettimeofday(&timestamp_e, NULL);
 
     return EXIT_SUCCESS;
 }
