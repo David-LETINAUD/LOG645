@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     int initialValue = atoi(argv[2]);
     int iterations = atoi(argv[3]);
 
-	
+	// Selection de la 1ere ou la 2eme fonction selon le parametre problem
     void * solvers[2];
     solvers[0] = solveFirst;
     solvers[1] = solveSecond;
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 	// Appel de la fonction de résolution de la matrice
 	number = solve(iterations, world_rank, initialValue);
 	
-	// Rassemble les valeurs du groupe de processus 
+	// Rassemble les valeurs du groupe de 64 processus 
     MPI_Gather(&number, 1, MPI_INT, rbuf, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
 	// Si processus parent

@@ -8,6 +8,7 @@
 int solveFirst(int iterations, int rank, int value) {
 	int sum = rank % 8 + rank / 8;
 
+	// Aucune dependance 
     for(int k = 1; k <= iterations; ++k) {
     	usleep(1000);
         value += sum * k;
@@ -18,7 +19,9 @@ int solveFirst(int iterations, int rank, int value) {
 
 int solveSecond(int iterations, int rank, int value) {
 	int nextRank = rank + 8;
+	// Pour simplifier et optimiser les conditions : lignes et colonnes inversees 
 	
+	// Dependance par ligne
 	if (rank < 8) {
 		for (int k = 1; k <= iterations; ++k) {
 			usleep(1000);
