@@ -11,11 +11,11 @@ int min(int a, int b);
 #define LAST_COL 11
 
 void solveFirst(const int rows, const int cols, const int iterations, const struct timespec ts_sleep, int **matrix) {
-	#pragma omp parallel for
+	#pragma omp parallel for collapse(3)
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < cols; j++) {
 			for (int k = 0; k < iterations; k++) {
-				usleep(50000);
+				nanosleep(&ts_sleep, NULL);
 				matrix[i][j] += i + j;
 			}
 		}
@@ -23,14 +23,13 @@ void solveFirst(const int rows, const int cols, const int iterations, const stru
 }
 
 void solveSecond(const int rows, const int cols, const int iterations, const struct timespec ts_sleep, int **matrix) {
-	for (int k = 0; k < iterations; k++) {
-		for (int i = 0; i < rows; i++) {
+	#pragma omp parallel for
+	for (int i = 0; i < rows; i++) {
+		for (int k = 0; k < iterations; k++) {
+			
 			matrix[i][LAST_COL] += i;
-		}
-		
-		
-		for (int j = cols - 2; j >= 0; j--) {
-			for (int i = rows - 1; i >= 0; i--) {
+			for (int j = cols - 2; j >= 0; j--) {
+				
 				matrix[i][j] += matrix[i][j + 1];
 			}
 		}
