@@ -11,7 +11,7 @@ int min(int a, int b);
 #define LAST_COL 11
 
 void solveFirst(const int rows, const int cols, const int iterations, const struct timespec ts_sleep, int **matrix) {
-	#pragma omp parallel for collapse(3)
+	#pragma omp parallel for collapse(2)
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < cols; j++) {
 			nanosleep(&ts_sleep, NULL);
