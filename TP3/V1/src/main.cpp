@@ -131,6 +131,7 @@ long sequential(int rows, int cols, int iters, double td, double h, int sleep) {
 }
 
 long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
+    // Peut-être initialiser différemment la matrice selon la si nb_col>nb_lignes ou inversement
     double ** matrix = allocateMatrix(rows, cols);
     fillMatrix(rows, cols, matrix);
 
@@ -143,6 +144,25 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
         printMatrix(rows, cols, matrix);
         deallocateMatrix(rows, matrix);
     }
+
+    // Calcul des index dont chaque tache doit s'occuper
+
+    // Pour k=1 à <=iters k++
+        //partie du dessus
+            // send dernière ligne 
+            // calcul
+        // partie du dessous
+            // send premiere ligne 
+            // calcul
+
+        // Autres parties
+            // recevoir message partie du dessus
+            // recevoir message partie du dessous
+            // calcul
+            // send premiere ligne 
+            // send deniere ligne 
+
+
 
     return duration_cast<microseconds>(timepoint_e - timepoint_s).count();
 }
