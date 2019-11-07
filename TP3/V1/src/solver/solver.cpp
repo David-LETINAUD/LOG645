@@ -47,6 +47,24 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    // Calcul des index dont chaque tache doit s'occuper
+
+    // Pour k=1 à <=iters k++
+        //partie du dessus
+            // send dernière ligne 
+            // calcul
+        // partie du dessous
+            // send premiere ligne 
+            // calcul
+
+        // Autres parties
+            // recevoir message partie du dessus
+            // recevoir message partie du dessous
+            // calcul
+            // send premiere ligne 
+            // send deniere ligne 
+
+
     if(0 != rank) {
         deallocateMatrix(rows, matrix);
     }
