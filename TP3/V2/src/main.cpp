@@ -9,7 +9,7 @@ const int TEMPS_ATTENTE = 5;
 const int SEND_TAG = 0;
 const int STOP_TAG = 1;
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
     if (argc != 9){
         printf("Il manque des arguments! \n");
         return 0;
@@ -23,7 +23,7 @@ int main(int argc, const char* argv[]) {
     struct timeval tp;
 
     // MPI_Init
-    err = MPI_Init(&argc, (void*) argv);
+    err = MPI_Init(&argc, &argv);
     if(err != MPI_SUCCESS){
         printf("Probleme lors de l'initialisation de MPI. \n");
         return -1;
