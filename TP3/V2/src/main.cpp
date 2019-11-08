@@ -126,6 +126,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    printf("MPI_Barrier");
     //MPI_Barrier()
     err = MPI_Barrier(MPI_COMM_WORLD);
 
@@ -136,6 +137,7 @@ int main(int argc, char* argv[]) {
     //Effectuer le traitement parallele
     // process maitre qui gerent la reponse
     if(mon_id == master){
+        printf("master\n");
         int proc_id = 1;
         MPI_Request requestList[(m-2)*(n-2)]; // -2 because of frontier
         MPI_Status statList[(m-2)*(n-2)]; // -2 because of frontier
