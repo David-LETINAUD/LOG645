@@ -1,168 +1,224 @@
-#include <iostream>
-#include <iomanip>
-#include <chrono>
-#include <thread>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include "sys/time.h"
+#include "mpi.h"
 
-#include <mpi.h>
+// Constants
+const int TEMPS_ATTENTE = 5;
+const int SEND_TAG = 0;
+const int STOP_TAG = 1;
 
-#include "matrix/matrix.hpp"
-#include "output/output.hpp"
-#include "solver/solver.hpp"
-
-void usage();
-void command(int argc, char* argv[]);
-
-void initial(int rows, int cols);
-long sequential(int rows, int cols, int iters, double td, double h, int sleep);
-long parallel(int rows, int cols, int iters, double td, double h, int sleep);
-
-using namespace std::chrono;
-
-using std::cout;
-using std::endl;
-using std::flush;
-using std::setprecision;
-using std::setw;
-using std::stod;
-using std::stoi;
-
-int main(int argc, char* argv[]) {
-    // Arguments.
-    int rows;
-    int cols;
-    int iters;
-    double td;
-    double h;
-
-    // MPI variables.
-    int mpi_status;
-    int rank;
-
-    // Resolution variables.
-    // Sleep will be in microseconds during execution.
-    int sleep = 1;
-
-    // Timing variables.
-    long runtime_seq = 0;
-    long runtime_par = 0;
-
-    if(6 != argc) {
-        usage();
-        return EXIT_FAILURE;
+int main(int argc, const char* argv[]) {
+    if (argc != 9){
+        printf("Il manque des arguments! \n");
+        return 0;
     }
 
-    mpi_status = MPI_Init(&argc, &argv);
-    if(MPI_SUCCESS != mpi_status) {
-        cout << "MPI initialization failure." << endl << flush;
-        return EXIT_FAILURE;
+    int err, nbp, mon_id, master;
+    int m, n, np, nbproc, seq, affichage;
+    int i,j,k;
+    float td, h;
+    double timeStart, timeEnd, TexecSeq, TexecPar;
+    struct timeval tp;
+
+    // MPI_Init
+    err = MPI_Init(&argc, (void*) &argv);
+    if(err != MPI_SUCCESS){
+        printf("Probleme lors de l'initialisation de MPI. \n");
+        return -1;
     }
 
-    rows = stoi(argv[1], nullptr, 10);
-    cols = stoi(argv[2], nullptr, 10);
-    iters = stoi(argv[3], nullptr, 10);
-    td = stod(argv[4], nullptr);
-    h = stod(argv[5], nullptr);
+    err = MPI_Comm_rank(MPI_COMM_WORLD, &mon_id);
+    err = MPI_Comm_size(MPI_COMM_WORLD, &nbp);
 
-    
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    //Validation des parametres
+    n           = (int)atoi(argv[1]); // nombre de lignes
+    m           = (int)atoi(argv[2]); // nombre de colonnes
+    np          = (int)atoi(argv[3]); // nombre de pas de temps
+    td          = (float)atof(argv[4]); // temps discretise
+    h           = (float)atof(argv[5]); // taille dun cotes dune subdivision
+    nbproc      = (int)atoi(argv[6]); // nombre de processus a utiliser
+    seq         = (int)atoi(argv[7]); // si on le resultat seq
+    affichage   = (int)atoi(argv[8]); //si on veut laffichage
 
-    if(0 == rank) {
-        command(argc, argv);
-        initial(rows, cols);
-        runtime_seq = sequential(rows, cols, iters, td, h, sleep);
+    float matrix[m][n][2];
+    master = 0;
+
+    if(mon_id == master){
+        //Initialiser la matrice
+        for( i = 0; i < m; i++){
+            for( j = 0; j < n; j++) {
+                usleep(TEMPS_ATTENTE);
+                matrix[i][j][0] = i*(m - i -1) * j*(n - j - 1);
+                matrix[i][j][1] = i*(m - i -1) * j*(n - j - 1);
+            }
+        }
+
+        //Affichage de la matrice initiale
+        if(affichage==1){
+            printf("Init. Matrice Seq \n");
+
+            for(i = 0; i < m; i++){
+                for(j = 0; j < n;j++){
+                    printf("%5.2f\t",matrix[i][j][0]);
+                }
+                printf("\n");
+            }
+        }
+
+        //Debut du timer
+        gettimeofday (&tp, NULL);
+        timeStart = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
+
+        //Traitement sequentiel
+        if(seq == 1){
+            for( k = 1; k <= np; k++){
+                for( i = 1; i < m-1; i++){
+                    for( j = 1; j < n-1; j++) {
+                        usleep(TEMPS_ATTENTE);
+                        matrix[i][j][k%2] = ((1-4*td/(h*h)) * (matrix[i][j][(k+1)%2])) + ((td/(h*h)) * (matrix[i-1][j][(k+1)%2] + matrix[i+1][j][(k+1)%2] + matrix[i][j+1][(k+1)%2] + matrix[i][j-1][(k+1)%2]));
+                    }
+                }
+            }
+        }
+
+        //Arret du timer
+        gettimeofday (&tp, NULL);
+        timeEnd = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
+        TexecSeq = timeEnd - timeStart;
+
+        //Affichage de la matrice finale
+        if(affichage==1 && seq==1){
+            printf("Matrice Seq \n");
+
+            k = 0;
+            if(np%2 ==1) {
+                k = 1;
+            }
+            for(i = 0; i < m; i++){
+                for(j = 0; j < n;j++){
+                    printf("%5.2f\t",matrix[i][j][k]);
+                }
+                printf("\n");
+            }
+        }
+
+        //Initialiser la matrice
+        for( i = 0; i < m; i++){
+            for( j = 0; j < n; j++) {
+                usleep(TEMPS_ATTENTE);
+                matrix[i][j][0] = i*(m - i -1) * j*(n - j - 1);
+                matrix[i][j][1] = i*(m - i -1) * j*(n - j - 1);
+            }
+        }
+
+        //Afficher la matrice initiale
+        if(affichage==1){
+            printf("Init. Matrice Par \n");
+
+            for(i = 0; i < m; i++){
+                for(j = 0; j < n;j++){
+                    printf("%5.2f\t",matrix[i][j][0]);
+                }
+                printf("\n");
+            }
+        }
     }
 
-    // Ensure that no process will start computing early.
-    MPI_Barrier(MPI_COMM_WORLD);
+    //MPI_Barrier()
+    err = MPI_Barrier(MPI_COMM_WORLD);
 
-    runtime_par = parallel(rows, cols, iters, td, h, sleep);
+    //Demarrer le timer
+    gettimeofday (&tp, NULL);
+    timeStart = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
 
-    if(0 == rank) {
-        printStatistics(1, runtime_seq, runtime_par);
+    //Effectuer le traitement parallele
+    // process maitre qui gerent la reponse
+    if(mon_id == master){
+        int proc_id = 1;
+        MPI_Request requestList[(m-2)*(n-2)]; // -2 because of frontier
+        MPI_Status statList[(m-2)*(n-2)]; // -2 because of frontier
+
+        for(int k = 1; k <= np; k++){
+            int sendCount = 0;
+            for(int i = 1; i < m-1; i++){
+                for(int j = 1; j < n-1; j++){
+                    float data[5];
+                    //set data
+                    data[0] = matrix[i][j][(k+1)%2];   // cell to calculate
+                    data[1] = matrix[i][j-1][(k+1)%2]; // left neighbor
+                    data[2] = matrix[i-1][j][(k+1)%2]; // top neighbor
+                    data[3] = matrix[i][j+1][(k+1)%2]; // right neigbor
+                    data[4] = matrix[i+1][j][(k+1)%2]; // bottom neighbor
+
+                    //send data to slave
+                    MPI_Send(data,5,MPI_FLOAT,proc_id,SEND_TAG,MPI_COMM_WORLD);
+
+                    //receive result from slave
+                    MPI_Irecv(&matrix[i][j][k%2],1,MPI_FLOAT,proc_id,MPI_ANY_TAG,MPI_COMM_WORLD,&requestList[sendCount]);
+                    sendCount++;
+                    proc_id = (proc_id%(nbproc-1))+1;//get next process
+                }
+            }
+
+            //Active wait for all data to be calculate to go to next delta time
+            MPI_Waitall(sendCount,requestList,statList);
+        }
+
+        //Envoie larret des calculs
+        for(proc_id = 1; proc_id< nbproc; proc_id++){
+            MPI_Send(0,0,MPI_INT, proc_id, STOP_TAG, MPI_COMM_WORLD);
+        }
+
+        //Arreter le timer
+        gettimeofday(&tp, NULL);
+        timeEnd = (double) (tp.tv_sec) + (double) (tp.tv_usec) / 1e6;
+        TexecPar = timeEnd - timeStart;
+
+        //Afficher la matrice finale
+        if(affichage==1){
+            int k = 0;
+            if(np%2 ==1) {
+                k = 1;
+            }
+            for(i = 0; i < m; i++){
+                for(j = 0; j < n;j++){
+                    printf("%5.2f\t",matrix[i][j][k]);
+                }
+                printf("\n");
+            }
+        }
+
+        //Afficher les temps seq,par et acceleration
+        printf("Temps sequentiel = %f\n", TexecSeq);
+        printf("Temps parallele = %f\n", TexecPar);
+        double acc = TexecSeq/TexecPar;
+        printf("Acceleration = %f\n", acc);
+    }
+    else if (mon_id>master && mon_id<nbproc){
+        // Process des slaves
+        while(1){
+            MPI_Status statut;
+            float data[5];
+            float result;
+
+            // Recevoir les infos de demarage
+            MPI_Recv(data,5,MPI_FLOAT,0,MPI_ANY_TAG,MPI_COMM_WORLD,&statut);
+            // Si recoit le signal darret
+            if(statut.MPI_TAG == STOP_TAG){
+                break;
+            }
+
+            usleep(TEMPS_ATTENTE);
+            result = ((1-4*td/(h*h)) * (data[0])) + ((td/(h*h)) * (data[1] + data[2] + data[3] + data[4]));
+            //Renvoie le resultat au master
+            MPI_Send(&result, 1, MPI_FLOAT, 0, SEND_TAG, MPI_COMM_WORLD);
+        }
     }
 
-    mpi_status = MPI_Finalize();
-    if(MPI_SUCCESS != mpi_status) {
-        cout << "Execution finalization terminated in error." << endl << flush;
-        return EXIT_FAILURE;
-    }
+    //Fermeture du Comm_World
+    MPI_Finalize();
 
-    return EXIT_SUCCESS;
-}
-
-void usage() {
-    cout << "Invalid arguments." << endl << flush;
-    cout << "Arguments: m n np td h" << endl << flush;
-}
-
-void command(int argc, char* argv[]) {
-    cout << "Command:" << flush;
-
-    for(int i = 0; i < argc; i++) {
-        cout << " " << argv[i] << flush;
-    }
-
-    cout << endl << flush;
-}
-
-void initial(int rows, int cols) {
-    double ** matrix = allocateMatrix(rows, cols);
-    fillMatrix(rows, cols, matrix);
-
-    cout << "-----  INITIAL   -----" << endl << flush;
-    printMatrix(rows, cols, matrix);
-
-    deallocateMatrix(rows, matrix);
-}
-
-long sequential(int rows, int cols, int iters, double td, double h, int sleep) {
-    double ** matrix = allocateMatrix(rows, cols);
-    fillMatrix(rows, cols, matrix);
-
-    time_point<high_resolution_clock> timepoint_s = high_resolution_clock::now();
-    solveSeq(rows, cols, iters, td, h, sleep, matrix);
-    time_point<high_resolution_clock> timepoint_e = high_resolution_clock::now();
-
-    cout << "----- SEQUENTIAL -----" << endl << flush;
-    printMatrix(rows, cols, matrix);
-
-    deallocateMatrix(rows, matrix);
-    return duration_cast<microseconds>(timepoint_e - timepoint_s).count();
-}
-
-long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
-    // Peut-être initialiser différemment la matrice selon la si nb_col>nb_lignes ou inversement
-    double ** matrix = allocateMatrix(rows, cols);
-    fillMatrix(rows, cols, matrix);
-
-    time_point<high_resolution_clock> timepoint_s = high_resolution_clock::now();
-    solvePar(rows, cols, iters, td, h, sleep, matrix);
-    time_point<high_resolution_clock> timepoint_e = high_resolution_clock::now();
-
-    if(nullptr != *matrix) {
-        cout << "-----  PARALLEL  -----" << endl << flush;
-        printMatrix(rows, cols, matrix);
-        deallocateMatrix(rows, matrix);
-    }
-
-    // Calcul des index dont chaque tache doit s'occuper
-
-    // Pour k=1 à <=iters k++
-        //partie du dessus
-            // send dernière ligne 
-            // calcul
-        // partie du dessous
-            // send premiere ligne 
-            // calcul
-
-        // Autres parties
-            // recevoir message partie du dessus
-            // recevoir message partie du dessous
-            // calcul
-            // send premiere ligne 
-            // send deniere ligne 
-
-
-
-    return duration_cast<microseconds>(timepoint_e - timepoint_s).count();
+    return 0;
 }
