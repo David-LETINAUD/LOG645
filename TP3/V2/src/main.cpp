@@ -158,7 +158,8 @@ int main(int argc, char* argv[]) {
                     MPI_Send(data,5,MPI_FLOAT,proc_id,SEND_TAG,MPI_COMM_WORLD);
 
                     //receive result from slave
-                    MPI_Irecv(&matrix[i][j][k%2],1,MPI_FLOAT,proc_id,MPI_ANY_TAG,MPI_COMM_WORLD,&requestList[sendCount]);
+                    //MPI_Irecv(&matrix[i][j][k%2],1,MPI_FLOAT,proc_id,MPI_ANY_TAG,MPI_COMM_WORLD,&requestList[sendCount]);
+                    MPI_recv(&matrix[i][j][k%2],1,MPI_FLOAT,0,MPI_ANY_TAG,MPI_COMM_WORLD,&statut);
                     sendCount++;
                     proc_id = (proc_id%(nbproc-1))+1;//get next process
                 }
