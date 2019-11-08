@@ -23,7 +23,7 @@ int main(int argc, const char* argv[]) {
     struct timeval tp;
 
     // MPI_Init
-    err = MPI_Init(&argc, (void*) &argv);
+    err = MPI_Init(&argc, (void*) argv);
     if(err != MPI_SUCCESS){
         printf("Probleme lors de l'initialisation de MPI. \n");
         return -1;
