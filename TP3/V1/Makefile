@@ -22,3 +22,4 @@ clean:
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(MKDIR_P) $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
+

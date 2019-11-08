@@ -27,3 +27,14 @@ void fillMatrix(int rows, int cols, double ** matrix) {
         }
     }
 }
+
+// Fonction ajoutée pour renverser la matrice
+double ** flipMatrix(int rows, int cols, double ** matrix) {
+	double ** matrix_flipped = allocateMatrix(cols, rows);
+	for (int i = 0; i < cols; i++) {
+		for (int j = 0; j < rows; j++) {
+			matrix_flipped[i][j] = matrix[j][i];
+		}
+	}
+	return matrix_flipped;
+}

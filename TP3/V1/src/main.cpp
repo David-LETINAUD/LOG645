@@ -133,14 +133,33 @@ long sequential(int rows, int cols, int iters, double td, double h, int sleep) {
 }
 
 long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
-    // Peut-être initialiser différemment la matrice selon la si nb_col>nb_lignes ou inversement
-    double ** matrix = allocateMatrix(rows, cols);
-    fillMatrix(rows, cols, matrix);
-
+    
+    // On souhaite paralléliser sur le nombre de lignes.
+    // Si le nombre de colonnes est plus long que le nombre de lignes,
+    // on renverse la matrice (on la re-renversera plus tard)
+    
+    bool matrix_flipped = cols > rows;
+    double ** matrix;
+    
+    // Création d'une matrice de travail
+    // (au cas où nous avons besoin de renverser la matrice)
+    double ** work_matrix;
+    if (matrix_flipped) {
+		work_matrix = allocateMatrix(cols, rows);
+		fillMatrix(cols, rows, work_matrix);
+	} else {
+		work_matrix = allocateMatrix(rows, cols);
+		fillMatrix(rows, cols, work_matrix);
+	}
+	
     time_point<high_resolution_clock> timepoint_s = high_resolution_clock::now();
-    solvePar(rows, cols, iters, td, h, sleep, matrix);
+    solvePar(rows, cols, iters, td, h, sleep, work_matrix);
     time_point<high_resolution_clock> timepoint_e = high_resolution_clock::now();
 
+	// Renversage de la matrice de travail si nécessaire
+	matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
+	deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);
+	
     if(nullptr != *matrix) {
         cout << "-----  PARALLEL  -----" << endl << flush;
         printMatrix(rows, cols, matrix);
