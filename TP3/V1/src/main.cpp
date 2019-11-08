@@ -72,9 +72,11 @@ int main(int argc, char* argv[]) {
         runtime_seq = sequential(rows, cols, iters, td, h, sleep);
     }
 
+    printf("MPI_Barrier\n");
     // Ensure that no process will start computing early.
     MPI_Barrier(MPI_COMM_WORLD);
 
+    printf("runtime_par\n");
     runtime_par = parallel(rows, cols, iters, td, h, sleep);
 
     if(0 == rank) {
