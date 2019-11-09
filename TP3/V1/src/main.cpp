@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
     // MPI variables.
     int mpi_status;
-    int rank;
+    int rank, nprocs;
 
     // Resolution variables.
     // Sleep will be in microseconds during execution.
@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
 
     
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD,&nprocs); 
 
     if(0 == rank) {
         command(argc, argv);
@@ -140,6 +141,8 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
     
     bool matrix_flipped = cols > rows;
     double ** matrix;
+    matrix = allocateMatrix(cols, rows);
+	fillMatrix(cols, rows, matrix);
     
     // Création d'une matrice de travail
     // (au cas où nous avons besoin de renverser la matrice)
@@ -153,7 +156,8 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	}
 	
     time_point<high_resolution_clock> timepoint_s = high_resolution_clock::now();
-    solvePar(rows, cols, iters, td, h, sleep, work_matrix);
+    //solvePar(rows, cols, iters, td, h, sleep, work_matrix);
+    solvePar(rows, cols, iters, td, h, sleep, matrix);
     time_point<high_resolution_clock> timepoint_e = high_resolution_clock::now();
 
 	// Renversage de la matrice de travail si nécessaire
