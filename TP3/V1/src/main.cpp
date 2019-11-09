@@ -166,6 +166,7 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
         deallocateMatrix(rows, matrix);
     }
 
+    
     // Calcul des index dont chaque tache doit s'occuper
 
     // Pour k=1 à <=iters k++
