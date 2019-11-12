@@ -20,7 +20,7 @@ using std::stod;
 using std::stoi;
 
 int main (int argc, char* argv[]) {
-	int rows = 39;
+	int rows = 19;
 	int cols = 10;
 	
 	int mpi_status = MPI_Init(&argc, &argv);
@@ -30,35 +30,32 @@ int main (int argc, char* argv[]) {
     }
 	
 	int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     
-    // Récupration du nombre de threads
-    int number_of_threads;
-    MPI_Comm_size(MPI_COMM_WORLD, &number_of_threads);
-    
-	if (rank == 0) {
-		// On calcule le nombre de lignes à distribuer à chacun des
-		// threads disponibles.
-		
+    int number_of_threads = 4;
+    //MPI_Comm_size(MPI_COMM_WORLD, &number_of_threads);
+	
+	
+	for (rank = 0; rank < 4; rank++) {
 		int rows_per_thread;
-		if (rows <= number_of_threads) rows_per_thread = 1;
-		else rows_per_thread = rows / number_of_threads;
+		int extra_rows;
 		
-		int unallocated_rows = rows % number_of_threads;
-		
-		int* indexes_per_thread = new int[number_of_threads];
-		
-		for (int i = 0; i < number_of_threads; i++) {
-			int indexes = rows_per_thread;
-			if (unallocated_rows > 0) {
-				unallocated_rows--;
-				indexes++;
-			}
-			MPI_Send(&indexes, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+		if (rows <= number_of_threads) {
+			rows_per_thread = 1;
+			extra_rows = 0;
 		}
+		else {
+			rows_per_thread = rows / number_of_threads;
+			extra_rows = rows % number_of_threads;
+		}
+		
+		int number_of_indexes = rows_per_thread;
+		if (extra_rows - rank > 0) number_of_indexes++;
+		
+		//Index sur lequel démarrer:
+		int start_index = (rank * rows_per_thread) + (extra_rows - rank > 0 ? rank : extra_rows);
+		int end_index = start_index + number_of_indexes;
+		cout << "Thread id " << rank << ": Starts at " << start_index << ", ends at " << end_index << "\n"; 
 	}
 	
-	int indexes;
-	MPI_Recv(&indexes, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	cout << "Thread id " << rank << ": " << indexes << " indexes"; 
 }
