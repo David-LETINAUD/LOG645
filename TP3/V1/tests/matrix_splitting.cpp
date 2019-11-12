@@ -24,16 +24,16 @@ int main (int argc, char* argv[]) {
 	int cols = 10;
 	
 	int mpi_status = MPI_Init(&argc, &argv);
-    if(MPI_SUCCESS != mpi_status) {
-        cout << "MPI initialization failure." << endl << flush;
-        return EXIT_FAILURE;
-    }
+	if(MPI_SUCCESS != mpi_status) {
+		cout << "MPI initialization failure." << endl << flush;
+		return EXIT_FAILURE;
+	}
 	
 	int rank;
-    //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    
-    int number_of_threads = 4;
-    //MPI_Comm_size(MPI_COMM_WORLD, &number_of_threads);
+	//MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	
+	int number_of_threads = 4;
+	//MPI_Comm_size(MPI_COMM_WORLD, &number_of_threads);
 	
 	
 	for (rank = 0; rank < 4; rank++) {

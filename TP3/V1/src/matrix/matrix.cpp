@@ -1,31 +1,31 @@
 #include "matrix.hpp"
 
 double ** allocateMatrix(int rows, int cols) {
-    double ** matrix = new double*[rows];
+	double ** matrix = new double*[rows];
 
-    for(int i = 0; i < rows; i++) {
-        matrix[i] = new double[cols];
-    }
+	for(int i = 0; i < rows; i++) {
+		matrix[i] = new double[cols];
+	}
 
-    return matrix;
+	return matrix;
 }
 
 void deallocateMatrix(int rows, double ** matrix) {
-    for(int i = 0; i < rows; i++) {
-        delete(matrix[i]);
-        matrix[i] = nullptr;
-    }
+	for(int i = 0; i < rows; i++) {
+		delete(matrix[i]);
+		matrix[i] = nullptr;
+	}
 
-    delete(matrix);
-    *matrix = nullptr;
+	delete(matrix);
+	*matrix = nullptr;
 }
 
 void fillMatrix(int rows, int cols, double ** matrix) {
-     for(int row = 0; row < rows; row++) {
-        for(int col = 0; col < cols; col++) {
-            matrix[row][col] = row * (rows - row - 1) * col * (cols - col - 1);
-        }
-    }
+	for(int row = 0; row < rows; row++) {
+		for(int col = 0; col < cols; col++) {
+			matrix[row][col] = row * (rows - row - 1) * col * (cols - col - 1);
+		}
+	}
 }
 
 // Fonction ajoutée pour renverser la matrice
