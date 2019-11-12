@@ -140,9 +140,10 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
     // on renverse la matrice (on la re-renversera plus tard)
     
     bool matrix_flipped = cols > rows;
-    double ** matrix;
-    matrix = allocateMatrix(cols, rows);
-	fillMatrix(cols, rows, matrix);
+
+    double ** matrix = allocateMatrix(rows, cols);
+    fillMatrix(rows, cols, matrix);
+    //printMatrix(rows, cols, matrix);
     
     // Création d'une matrice de travail
     // (au cas où nous avons besoin de renverser la matrice)
@@ -161,8 +162,10 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
     time_point<high_resolution_clock> timepoint_e = high_resolution_clock::now();
 
 	// Renversage de la matrice de travail si nécessaire
-	matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
-	deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);
+	/*matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
+	deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);*/
+
+    MPI_Gather( sendarray, rows * cols, MPI_DOUBLE, matrix, 100, MPI_INT, root, comm);
 	
     if(nullptr != *matrix) {
         cout << "-----  PARALLEL  -----" << endl << flush;
@@ -170,7 +173,6 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
         deallocateMatrix(rows, matrix);
     }
 
-    
     // Calcul des index dont chaque tache doit s'occuper
 
     // Pour k=1 à <=iters k++

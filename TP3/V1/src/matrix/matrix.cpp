@@ -1,7 +1,4 @@
 #include "matrix.hpp"
-#ifdef __clang__
-	#include <cstddef>
-#endif
 
 double ** allocateMatrix(int rows, int cols) {
     double ** matrix = new double*[rows];
