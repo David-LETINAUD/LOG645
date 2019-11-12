@@ -22,7 +22,7 @@ using std::stoi;
 int main () {
 	int rows = 5;
 	int cols = 10;
-	
+
 	bool matrix_flipped = cols > rows;
     double ** matrix;
     
