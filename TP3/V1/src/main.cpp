@@ -165,7 +165,7 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	/*matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
 	deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);*/
 
-    MPI_Gather( sendarray, rows * cols, MPI_DOUBLE, matrix, 100, MPI_INT, root, comm);
+    //MPI_Gather( sendarray, rows * cols, MPI_DOUBLE, matrix, 100, MPI_INT, root, comm);
 	
     if(nullptr != *matrix) {
         cout << "-----  PARALLEL  -----" << endl << flush;

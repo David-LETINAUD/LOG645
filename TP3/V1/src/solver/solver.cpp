@@ -67,9 +67,27 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
     int y_range = (rows > nprocs) ? rows/nprocs : 1;    // rows per thread
     int y_reste = rows % nprocs;                        // unallocated_rows
 
-    printf("rank:%d, nprocs:%d,y_range:%d, rows:%d, cols:%d\n", rank, nprocs, y_range,rows,cols);
-    int y_begin = rank*y_range;
-    int y_end = y_range*(rank+1);
+    int y_begin = rank * y_range ;
+    int y_end = y_range*(rank+1) ; 
+
+
+    if (y_reste)
+    {
+        if(rank<y_reste)
+        {
+            ++y_range;
+            y_begin += rank ;//* y_reste; 
+            y_end += (rank+1) ;//* y_reste; 
+        }
+        else
+        {
+            y_begin+=y_reste;
+            y_end+=y_reste;
+        }
+    }
+    
+
+    printf("rank:%d, nprocs:%d,y_range:%d, y_reste:%d, rows:%d, cols:%d, y_begin:%d, y_end:%d\n", rank, nprocs, y_range,y_reste, rows,cols, y_begin,y_end);
 
 
     for (int k = 0; k < iterations; ++k)
