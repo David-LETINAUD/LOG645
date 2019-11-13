@@ -139,6 +139,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                 memcpy(lineCurrBuffer, matrix[i], cols * sizeof(double));
 
                 for(int j = 1; j < cols - 1; j++) {
+
                     c = lineCurrBuffer[j];
                     t = linePrevBuffer[j];
                     b = matrix[i + 1][j];
@@ -150,7 +151,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                 }
                 memcpy(linePrevBuffer, lineCurrBuffer, cols * sizeof(double));
                 // Màj de line PrevBuf
-            }
+            }   
 
             // Copy de next_matrix dans matrix
             memcpy(matrix, next_matrix, cols * rows * sizeof(double)); 
@@ -174,6 +175,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                 memcpy(lineCurrBuffer, matrix[i], cols * sizeof(double));
 
                 for(int j = 1; j < cols - 1; j++) {
+
                     c = lineCurrBuffer[j];
                     t = linePrevBuffer[j];
                     b = matrix[i + 1][j];
@@ -197,8 +199,10 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
     printMatrix(rows, cols, matrix); 
 
 
+    // /!\ Attention à voir comment on gère la récupération des matrices
     if(0 != rank) {
-        deallocateMatrix(rows, matrix);
+        printf("rank:%d,rows:%d,cols:%d,len:%d\n",rank,rows, cols, LEN(matrix));
+        //deallocateMatrix(rows, matrix);
     }
 
     sleep_for(microseconds(500000));

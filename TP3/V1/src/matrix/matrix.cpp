@@ -1,5 +1,7 @@
 #include "matrix.hpp"
 
+#include <stdio.h>
+
 double ** allocateMatrix(int rows, int cols) {
 	double ** matrix = new double*[rows];
 
@@ -11,11 +13,15 @@ double ** allocateMatrix(int rows, int cols) {
 }
 
 void deallocateMatrix(int rows, double ** matrix) {
+	printf("%s\n",__FUNCTION__);
 	for(int i = 0; i < rows; i++) {
+		//printf("i:%d\n",i);
+		//delete [] matrix[i] ;
 		delete(matrix[i]);
 		matrix[i] = nullptr;
 	}
 
+	//delete [] matrix ;
 	delete(matrix);
 	*matrix = nullptr;
 }

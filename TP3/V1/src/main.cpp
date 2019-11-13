@@ -9,6 +9,9 @@
 #include "output/output.hpp"
 #include "solver/solver.hpp"
 
+#include <chrono>
+using std::this_thread::sleep_for;
+
 void usage();
 void command(int argc, char* argv[]);
 
@@ -143,7 +146,6 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 
 	double ** matrix = allocateMatrix(rows, cols);
 	fillMatrix(rows, cols, matrix);
-	//printMatrix(rows, cols, matrix);
 	
 	// Création d'une matrice de travail
 	// (au cas où nous avons besoin de renverser la matrice)
@@ -156,22 +158,36 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 		fillMatrix(rows, cols, work_matrix);
 	}
 	
-	time_point<high_resolution_clock> timepoint_s = high_resolution_clock::now();
-	//solvePar(rows, cols, iters, td, h, sleep, work_matrix);
-	solvePar(rows, cols, iters, td, h, sleep, matrix);
-	time_point<high_resolution_clock> timepoint_e = high_resolution_clock::now();
+	time_point<high_resolution_clock> timepoint_s, timepoint_e;
+	if (matrix_flipped) {
+		printf("MATRIX FLIPPED\n\n");
+		timepoint_s = high_resolution_clock::now();
+		solvePar(cols, rows, iters, td, h, sleep, work_matrix);
+		timepoint_e = high_resolution_clock::now();
+	} else {
+		timepoint_s = high_resolution_clock::now();
+		solvePar(rows, cols, iters, td, h, sleep, work_matrix);
+		timepoint_e = high_resolution_clock::now();
+	}
+
+	
+	printf("FIN CALCUL\n\n");
+
 
 	// Renversage de la matrice de travail si nécessaire
-	/*matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
-	deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);*/
-
+	matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
+	deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);
+	
+	// A faire ! recuperation des matrices
     //MPI_Gather( sendarray, rows * cols, MPI_DOUBLE, matrix, 100, MPI_INT, root, comm);
 	
+	
 	if(nullptr != *matrix) {
-		cout << "-----  PARALLEL  -----" << endl << flush;
+		cout << "-----  PARALLEL  -----" << endl << flush;		
 		printMatrix(rows, cols, matrix);
 		deallocateMatrix(rows, matrix);
 	}
+	
 
 	// Calcul des index dont chaque tache doit s'occuper
 
