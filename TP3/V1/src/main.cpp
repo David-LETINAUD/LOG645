@@ -176,10 +176,20 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	// A faire ! recuperation des matrices
     //MPI_Gather( sendarray, rows * cols, MPI_DOUBLE, matrix, 100, MPI_INT, root, comm);
 	
+	int rank, nprocs;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 	
 	if(nullptr != *matrix) {
-		cout << "-----  PARALLEL  -----" << endl << flush;		
-		printMatrix(rows, cols, matrix);
+		int current_rank = 0;
+		while (current_rank < nprocs) {
+			if (rank == current_rank) {
+				cout << "-----  PARALLEL " << rank << " -----" << endl << flush;
+				printMatrix(rows, cols, matrix);
+			}
+			current_rank++;
+			MPI_Barrier(MPI_COMM_WORLD);
+		}
 		deallocateMatrix(rows, matrix);
 	}
 	
@@ -202,6 +212,6 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 			// send deniere ligne 
 
 
-
+	MPI_Barrier(MPI_COMM_WORLD);
 	return duration_cast<microseconds>(timepoint_e - timepoint_s).count();
 }
