@@ -18,6 +18,9 @@ using std::cout;
 
 #define LEN(arr) ((int) (sizeof (arr) / sizeof (arr)[0]))
 
+#define S_INDEX_CONTROL 10000
+#define S_MATRIX_XFER   10000
+
 void solveSeq(int rows, int cols, int iterations, double td, double h, int sleep, double ** matrix) {
 	double c, l, r, t, b;
 	
@@ -89,7 +92,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
     }
     
 
-    printf("rank:%d, nprocs:%d,y_range:%d, y_reste:%d, rows:%d, cols:%d, y_begin:%d, y_end:%d\n", rank, nprocs, y_range,y_reste, rows,cols, y_begin,y_end);
+    //printf("rank:%d, nprocs:%d,y_range:%d, y_reste:%d, rows:%d, cols:%d, y_begin:%d, y_end:%d\n", rank, nprocs, y_range,y_reste, rows,cols, y_begin,y_end);
 
 
     for (int k = 0; k < iterations; ++k)
@@ -100,9 +103,9 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
             //printf("First rank : %d\n", rank);
 
             // Send derniere col
-            MPI_Send(matrix[y_end-1],cols,MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD);            
+            MPI_Send(matrix[y_end-1],cols,MPI_DOUBLE, rank + 1, k, MPI_COMM_WORLD);            
             // Receive 1 ere ligne
-            MPI_Recv(matrix[y_end], cols, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+            MPI_Recv(matrix[y_end], cols, MPI_DOUBLE, rank + 1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
             
             // Calculs
             memcpy(linePrevBuffer, matrix[0], cols * sizeof(double));
@@ -114,15 +117,16 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                     b = matrix[i + 1][j];
                     l = lineCurrBuffer[j - 1];
                     r = lineCurrBuffer[j + 1];
+                    //printf("[Rank: %d @ k: %d -- c = %d, t = %d, b = %d, l = %d, r = %d]\n", rank, k, c, t, b, l, r);
 
                     sleep_for(microseconds(sleep));
-                    next_matrix[i][j] = (double) c * (1.0 - 4.0 * td / h_square) + (t + b + l + r) * (td / h_square);
+                    matrix[i][j] = (double) c * (1.0 - 4.0 * td / h_square) + (t + b + l + r) * (td / h_square);
                 }
                 // Màj de line PrevBuf
                 memcpy(linePrevBuffer, lineCurrBuffer, cols * sizeof(double));
             } 
             // Copy de next_matrix dans matrix
-            memcpy(matrix, next_matrix, cols * rows * sizeof(double));            
+           // memcpy(matrix, next_matrix, cols * rows * sizeof(double));            
         }
         // dernier => sans bottom
         else if(rank==nprocs-1)
@@ -131,9 +135,9 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
             printf("###################################\n");*/
 
             // Send 1 ere ligne
-            MPI_Send(matrix[y_begin],cols,MPI_DOUBLE, rank-1,0,MPI_COMM_WORLD);
+            MPI_Send(matrix[y_begin],cols,MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD);
             // Receive derniere ligne
-            MPI_Recv(matrix[y_begin-1], cols, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE); 
+            MPI_Recv(matrix[y_begin-1], cols, MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE); 
 
             // Calculs
             memcpy(linePrevBuffer, matrix[y_begin-1], cols * sizeof(double));
@@ -147,16 +151,17 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                     b = matrix[i + 1][j];
                     l = lineCurrBuffer[j - 1];
                     r = lineCurrBuffer[j + 1];
-
+                    
+                    //printf("[Rank: %d @ k: %d -- c = %d, t = %d, b = %d, l = %d, r = %d]\n", rank, k, c, t, b, l, r);
                     sleep_for(microseconds(sleep));
-                    next_matrix[i][j] = c * (1.0 - 4.0 * td / h_square) + (t + b + l + r) * (td / h_square);
+                    matrix[i][j] = c * (1.0 - 4.0 * td / h_square) + (t + b + l + r) * (td / h_square);
                 }
                 memcpy(linePrevBuffer, lineCurrBuffer, cols * sizeof(double));
                 // Màj de line PrevBuf
             }   
 
             // Copy de next_matrix dans matrix
-            memcpy(matrix, next_matrix, cols * rows * sizeof(double)); 
+            //memcpy(matrix, next_matrix, cols * rows * sizeof(double)); 
         }
         else // si nprocs ==2 => pas executé
         {
@@ -164,12 +169,12 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
             printf("###################################\n");*/
 
             // Send 1 ere ligne
-            MPI_Send(matrix[y_begin],cols,MPI_DOUBLE, rank-1,0,MPI_COMM_WORLD);
-            MPI_Send( matrix[y_end-1],cols,MPI_DOUBLE, rank+1,0,MPI_COMM_WORLD);
+            MPI_Send(matrix[y_begin],cols,MPI_DOUBLE, rank-1,k,MPI_COMM_WORLD);
+            MPI_Send( matrix[y_end-1],cols,MPI_DOUBLE, rank+1,k,MPI_COMM_WORLD);
 
             // Receive derniere ligne
-            MPI_Recv(matrix[y_begin-1], cols, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);  
-            MPI_Recv(matrix[y_end], cols, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);  
+            MPI_Recv(matrix[y_begin-1], cols, MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE);  
+            MPI_Recv(matrix[y_end], cols, MPI_DOUBLE, rank+1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE);  
 
             //Calculs
             memcpy(linePrevBuffer, matrix[y_begin-1], cols * sizeof(double));
@@ -183,9 +188,10 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                     b = matrix[i + 1][j];
                     l = lineCurrBuffer[j - 1];
                     r = lineCurrBuffer[j + 1];
-
+                    
+                    //printf("[Rank: %d @ k: %d -- c = %d, t = %d, b = %d, l = %d, r = %d]\n", rank, k, c, t, b, l, r);
                     sleep_for(microseconds(sleep));
-                    next_matrix[i][j] = c * (1.0 - 4.0 * td / h_square) + (t + b + l + r) * (td / h_square);
+                    matrix[i][j] = c * (1.0 - 4.0 * td / h_square) + (t + b + l + r) * (td / h_square);
                 }
                 memcpy(linePrevBuffer, lineCurrBuffer, cols * sizeof(double));
                 // Màj de line PrevBuf
@@ -193,7 +199,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
 
             // Copy de next_matrix dans matrix
             //printMatrix(rows, cols, matrix);
-            memcpy(matrix, next_matrix, cols * rows * sizeof(double)); 
+            //memcpy(matrix, next_matrix, cols * rows * sizeof(double)); 
         }
     }
 
@@ -206,11 +212,11 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
 			double * recv_buffer = new double[cols];
 			
 			int start_index, end_index;
-			MPI_Recv(&start_index, 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			MPI_Recv(&end_index, 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Recv(&start_index, 1, MPI_INT, i, S_INDEX_CONTROL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Recv(&end_index, 1, MPI_INT, i, S_INDEX_CONTROL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			cout << "RANK 0: Indexes of " << i << ": [" << start_index << ", " << end_index << "[\n"; 
 			for (int j = start_index; j < end_index; j++) {
-				MPI_Recv(recv_buffer, cols, MPI_DOUBLE, i, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Recv(recv_buffer, cols, MPI_DOUBLE, i, S_MATRIX_XFER, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				memcpy(matrix[j], recv_buffer, cols * sizeof(double));
 				for (int z = 0; z < cols; z++) {
 					cout << recv_buffer[z] << ", ";
@@ -224,11 +230,11 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
 		}
     }
     else {
-		MPI_Send(&y_begin, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
-		MPI_Send(&y_end, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
+		MPI_Send(&y_begin, 1, MPI_INT, 0, S_INDEX_CONTROL, MPI_COMM_WORLD);
+		MPI_Send(&y_end, 1, MPI_INT, 0, S_INDEX_CONTROL, MPI_COMM_WORLD);
 		for (int j = y_begin; j < y_end; j++) {
 			double * current_column = matrix[j];
-			MPI_Send(current_column, cols, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+			MPI_Send(current_column, cols, MPI_DOUBLE, 0, S_MATRIX_XFER, MPI_COMM_WORLD);
 		}
 	}
 
