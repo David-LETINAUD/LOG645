@@ -195,13 +195,10 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
         }
     }
 
-    printf("RANK :%d\n",rank);
-    printMatrix(rows, cols, matrix); 
-
 
     // /!\ Attention à voir comment on gère la récupération des matrices
     if(0 != rank) {
-        printf("rank:%d,rows:%d,cols:%d,len:%d\n",rank,rows, cols, LEN(matrix));
+        //printf("rank:%d,rows:%d,cols:%d,len:%d\n",rank,rows, cols, LEN(matrix));
         //deallocateMatrix(rows, matrix);
     }
 

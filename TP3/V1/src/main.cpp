@@ -160,7 +160,6 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	
 	time_point<high_resolution_clock> timepoint_s, timepoint_e;
 	if (matrix_flipped) {
-		printf("MATRIX FLIPPED\n\n");
 		timepoint_s = high_resolution_clock::now();
 		solvePar(cols, rows, iters, td, h, sleep, work_matrix);
 		timepoint_e = high_resolution_clock::now();
@@ -169,11 +168,7 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 		solvePar(rows, cols, iters, td, h, sleep, work_matrix);
 		timepoint_e = high_resolution_clock::now();
 	}
-
 	
-	printf("FIN CALCUL\n\n");
-
-
 	// Renversage de la matrice de travail si nécessaire
 	matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
 	deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);
