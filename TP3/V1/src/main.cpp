@@ -180,7 +180,7 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 	
-	if(nullptr != *matrix) {
+	/*if(nullptr != *matrix) {
 		int current_rank = 0;
 		while (current_rank < nprocs) {
 			if (rank == current_rank) {
@@ -191,6 +191,11 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 			MPI_Barrier(MPI_COMM_WORLD);
 		}
 		deallocateMatrix(rows, matrix);
+	}*/
+	
+	if (rank == 0) {
+		cout << "-----  PARALLEL " << rank << " -----" << endl << flush;
+		printMatrix(rows, cols, matrix);
 	}
 	
 

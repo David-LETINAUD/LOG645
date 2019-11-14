@@ -1,6 +1,7 @@
 #include <chrono>
 #include <cstring>
 #include <thread>
+#include <iostream>
 
 #include <mpi.h>
 
@@ -12,6 +13,7 @@ using std::memcpy;
 
 using std::this_thread::sleep_for;
 using std::chrono::microseconds;
+using std::cout;
 
 
 #define LEN(arr) ((int) (sizeof (arr) / sizeof (arr)[0]))
@@ -98,7 +100,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
             //printf("First rank : %d\n", rank);
 
             // Send derniere col
-            MPI_Send(matrix[y_end-1],cols,MPI_DOUBLE, rank+1,0,MPI_COMM_WORLD);            
+            MPI_Send(matrix[y_end-1],cols,MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD);            
             // Receive 1 ere ligne
             MPI_Recv(matrix[y_end], cols, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
             
@@ -197,10 +199,38 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
 
 
     // /!\ Attention à voir comment on gère la récupération des matrices
-    if(0 != rank) {
+    if(rank == 0) {
         //printf("rank:%d,rows:%d,cols:%d,len:%d\n",rank,rows, cols, LEN(matrix));
         //deallocateMatrix(rows, matrix);
+        for (int i = 1; i < nprocs; i++) {
+			double * recv_buffer = new double[cols];
+			
+			int start_index, end_index;
+			MPI_Recv(&start_index, 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Recv(&end_index, 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			cout << "RANK 0: Indexes of " << i << ": [" << start_index << ", " << end_index << "[\n"; 
+			for (int j = start_index; j < end_index; j++) {
+				MPI_Recv(recv_buffer, cols, MPI_DOUBLE, i, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				memcpy(matrix[j], recv_buffer, cols * sizeof(double));
+				for (int z = 0; z < cols; z++) {
+					cout << recv_buffer[z] << ", ";
+				}
+				cout << "\n";
+				for (int z = 0; z < cols; z++) {
+					cout << matrix[j][z] << ", ";
+				}
+				cout << "\n";
+			}
+		}
     }
+    else {
+		MPI_Send(&y_begin, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
+		MPI_Send(&y_end, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
+		for (int j = y_begin; j < y_end; j++) {
+			double * current_column = matrix[j];
+			MPI_Send(current_column, cols, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+		}
+	}
 
     sleep_for(microseconds(500000));
 }
