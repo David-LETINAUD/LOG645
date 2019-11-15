@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 	runtime_par = parallel(rows, cols, iters, td, h, sleep);
 
 	if(0 == rank) {
-		printStatistics(1, runtime_seq, runtime_par);
+		printStatistics(nprocs, runtime_seq, runtime_par);
 	}
 
 	mpi_status = MPI_Finalize();
