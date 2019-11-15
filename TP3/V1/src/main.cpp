@@ -30,22 +30,22 @@ using std::stod;
 using std::stoi;
 
 int main(int argc, char* argv[]) {
-	// Arguments.
+	// Arguments
 	int rows;
 	int cols;
 	int iters;
 	double td;
 	double h;
 
-	// MPI variables.
+	// MPI variables
 	int mpi_status;
 	int rank, nprocs;
 
-	// Resolution variables.
+	// Resolution variables
 	// Sleep will be in microseconds during execution.
 	int sleep = 1;
 
-	// Timing variables.
+	// Timing variables
 	long runtime_seq = 0;
 	long runtime_par = 0;
 
@@ -76,11 +76,9 @@ int main(int argc, char* argv[]) {
 		runtime_seq = sequential(rows, cols, iters, td, h, sleep);
 	}
 
-	printf("MPI_Barrier\n");
 	// Ensure that no process will start computing early.
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	printf("runtime_par\n");
 	runtime_par = parallel(rows, cols, iters, td, h, sleep);
 
 	if(0 == rank) {
@@ -144,69 +142,44 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	
 	bool matrix_flipped = cols > rows;
 
-	double ** matrix = allocateMatrix(rows, cols);
-	fillMatrix(rows, cols, matrix);
-	
-	// Création d'une matrice de travail
-	// (au cas où nous avons besoin de renverser la matrice)
-	double ** work_matrix;
+	double ** matrix;
 	if (matrix_flipped) {
-		work_matrix = allocateMatrix(cols, rows);
-		fillMatrix(cols, rows, work_matrix);
+		matrix = allocateMatrix(cols, rows);
+		fillMatrix(cols, rows, matrix);
 	} else {
-		work_matrix = allocateMatrix(rows, cols);
-		fillMatrix(rows, cols, work_matrix);
+		matrix = allocateMatrix(rows, cols);
+		fillMatrix(rows, cols, matrix);
 	}
 	
 	time_point<high_resolution_clock> timepoint_s, timepoint_e;
 	if (matrix_flipped) {
-		printf("MATRIX FLIPPED\n\n");
 		timepoint_s = high_resolution_clock::now();
-		solvePar(cols, rows, iters, td, h, sleep, work_matrix);
+		solvePar(cols, rows, iters, td, h, sleep, matrix);
 		timepoint_e = high_resolution_clock::now();
 	} else {
 		timepoint_s = high_resolution_clock::now();
-		solvePar(rows, cols, iters, td, h, sleep, work_matrix);
+		solvePar(rows, cols, iters, td, h, sleep, matrix);
 		timepoint_e = high_resolution_clock::now();
 	}
-
 	
-	printf("FIN CALCUL\n\n");
-
-
-	// Renversage de la matrice de travail si nécessaire
-	matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
-	deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);
+	int rank, nprocs;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 	
-	// A faire ! recuperation des matrices
-    //MPI_Gather( sendarray, rows * cols, MPI_DOUBLE, matrix, 100, MPI_INT, root, comm);
-	
-	
-	if(nullptr != *matrix) {
-		cout << "-----  PARALLEL  -----" << endl << flush;		
-		printMatrix(rows, cols, matrix);
-		deallocateMatrix(rows, matrix);
+	if (rank == 0) {
+		cout << "-----  PARALLEL -----" << endl << flush;
+		if (matrix_flipped) {
+			double ** intermediary_matrix = flipMatrix(cols, rows, matrix);
+			printMatrix(rows, cols, intermediary_matrix);
+			deallocateMatrix(rows, intermediary_matrix);
+			deallocateMatrix(cols, matrix);
+		}
+		else {
+			printMatrix(rows, cols, matrix);
+			deallocateMatrix(rows, matrix);
+		}
 	}
 	
-
-	// Calcul des index dont chaque tache doit s'occuper
-
-	// Pour k=1 à <=iters k++
-		//partie du dessus
-			// send dernière ligne 
-			// calcul
-		// partie du dessous
-			// send premiere ligne 
-			// calcul
-
-		// Autres parties
-			// recevoir message partie du dessus
-			// recevoir message partie du dessous
-			// calcul
-			// send premiere ligne 
-			// send deniere ligne 
-
-
-
+	MPI_Barrier(MPI_COMM_WORLD);
 	return duration_cast<microseconds>(timepoint_e - timepoint_s).count();
 }

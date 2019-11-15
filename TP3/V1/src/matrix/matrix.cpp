@@ -13,7 +13,7 @@ double ** allocateMatrix(int rows, int cols) {
 }
 
 void deallocateMatrix(int rows, double ** matrix) {
-	printf("%s\n",__FUNCTION__);
+	//printf("%s\n",__FUNCTION__);
 	for(int i = 0; i < rows; i++) {
 		//printf("i:%d\n",i);
 		//delete [] matrix[i] ;
