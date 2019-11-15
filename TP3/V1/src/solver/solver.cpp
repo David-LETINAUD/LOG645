@@ -170,7 +170,6 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
         }
     }
 
-
     if(rank == 0) {
         for (int i = 1; i < nprocs; i++) {
 			double * recv_buffer = new double[cols];
