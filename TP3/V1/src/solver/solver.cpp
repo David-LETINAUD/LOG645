@@ -62,10 +62,10 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
     double * lineCurrBuffer = new double[cols];
 
     int y_range = (rows > nprocs) ? rows/nprocs : 1;
-    int y_reste = rows % nprocs;
+    int y_reste = (rows > nprocs) ? rows % nprocs : 0;
 
     int y_begin = rank * y_range ;
-    int y_end = y_range*(rank+1) ; 
+    int y_end = y_range*(rank+1) ;
 
 
     if (y_reste)
@@ -82,7 +82,9 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
             y_end+=y_reste;
         }
     }
-
+    
+    if (nprocs > rows) nprocs = rows;
+    if (rank >= rows) return;
 
     for (int k = 0; k < iterations; ++k)
     {
