@@ -219,11 +219,11 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
 				MPI_Recv(recv_buffer, cols, MPI_DOUBLE, i, S_MATRIX_XFER, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				memcpy(matrix[j], recv_buffer, cols * sizeof(double));
 				for (int z = 0; z < cols; z++) {
-					cout << recv_buffer[z] << ", ";
+					cout << recv_buffer[z] << ", ";
 				}
 				cout << "\n";
 				for (int z = 0; z < cols; z++) {
-					cout << matrix[j][z] << ", ";
+					cout << matrix[j][z] << ", ";
 				}
 				cout << "\n";
 			}

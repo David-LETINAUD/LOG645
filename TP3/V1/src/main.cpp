@@ -144,34 +144,47 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	
 	bool matrix_flipped = cols > rows;
 
-	double ** matrix = allocateMatrix(rows, cols);
-	fillMatrix(rows, cols, matrix);
+	double ** matrix;// = allocateMatrix(rows, cols);
+	//fillMatrix(rows, cols, matrix);
 	
 	// Création d'une matrice de travail
 	// (au cas où nous avons besoin de renverser la matrice)
-	double ** work_matrix;
+	//double ** work_matrix;
 	if (matrix_flipped) {
-		work_matrix = allocateMatrix(cols, rows);
-		fillMatrix(cols, rows, work_matrix);
+		matrix = allocateMatrix(cols, rows);
+		fillMatrix(cols, rows, matrix);
 	} else {
-		work_matrix = allocateMatrix(rows, cols);
-		fillMatrix(rows, cols, work_matrix);
+		matrix = allocateMatrix(rows, cols);
+		fillMatrix(rows, cols, matrix);
 	}
 	
 	time_point<high_resolution_clock> timepoint_s, timepoint_e;
 	if (matrix_flipped) {
 		timepoint_s = high_resolution_clock::now();
-		solvePar(cols, rows, iters, td, h, sleep, work_matrix);
+		solvePar(cols, rows, iters, td, h, sleep, matrix);
 		timepoint_e = high_resolution_clock::now();
 	} else {
 		timepoint_s = high_resolution_clock::now();
-		solvePar(rows, cols, iters, td, h, sleep, work_matrix);
+		solvePar(rows, cols, iters, td, h, sleep, matrix);
 		timepoint_e = high_resolution_clock::now();
 	}
 	
 	// Renversage de la matrice de travail si nécessaire
-	matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
-	deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);
+	//matrix = (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix);
+	/*if (matrix_flipped) {
+		cout << "Matrix was flipped\n";
+		double ** fuck_sake;
+		fuck_sake = flipMatrix(cols, rows, work_matrix);
+		memcpy(matrix, fuck_sake, cols * rows * sizeof(double *));
+		deallocateMatrix(rows, fuck_sake);
+		deallocateMatrix(cols, work_matrix);
+	} else {
+		cout << "Matrix wasn't flipped\n";
+		memcpy(matrix, work_matrix, rows * cols * sizeof(double));
+		deallocateMatrix(rows, work_matrix);
+	}*/
+	//memcpy(matrix, (matrix_flipped ? flipMatrix(cols, rows, work_matrix) : work_matrix), rows * cols * sizeof(double *));
+	//deallocateMatrix((matrix_flipped ? cols : rows), work_matrix);
 	
 	// A faire ! recuperation des matrices
     //MPI_Gather( sendarray, rows * cols, MPI_DOUBLE, matrix, 100, MPI_INT, root, comm);
@@ -195,7 +208,17 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	
 	if (rank == 0) {
 		cout << "-----  PARALLEL " << rank << " -----" << endl << flush;
-		printMatrix(rows, cols, matrix);
+		//cout << "Rows: " << rows << " Cols: " << cols << endl<< flush;
+		if (matrix_flipped) {
+			double ** intermediary_matrix = flipMatrix(cols, rows, matrix);
+			printMatrix(rows, cols, intermediary_matrix);
+			deallocateMatrix(rows, intermediary_matrix);
+			deallocateMatrix(cols, matrix);
+		}
+		else {
+			printMatrix(rows, cols, matrix);
+			deallocateMatrix(rows, matrix);
+		}
 	}
 	
 
