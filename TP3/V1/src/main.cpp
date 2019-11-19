@@ -66,10 +66,11 @@ int main(int argc, char* argv[]) {
 	td = stod(argv[4], nullptr);
 	h = stod(argv[5], nullptr);
 
-	
+	// Get the process rank and number of process
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&nprocs); 
 
+	// First process run the sequential program
 	if(0 == rank) {
 		command(argc, argv);
 		initial(rows, cols);
@@ -79,6 +80,7 @@ int main(int argc, char* argv[]) {
 	// Ensure that no process will start computing early.
 	MPI_Barrier(MPI_COMM_WORLD);
 
+	// Run the parallel program
 	runtime_par = parallel(rows, cols, iters, td, h, sleep);
 
 	if(0 == rank) {
@@ -137,9 +139,8 @@ long sequential(int rows, int cols, int iters, double td, double h, int sleep) {
 long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	
 	// On souhaite paralléliser sur le nombre de lignes.
-	// Si le nombre de colonnes est plus long que le nombre de lignes,
-	// on renverse la matrice (on la re-renversera plus tard)
-	
+	// Si le nombre de colonnes est plus grand que le nombre de lignes,..
+	// ..on renverse la matrice (on la re-renversera plus tard)
 	bool matrix_flipped = cols > rows;
 
 	double ** matrix;
@@ -162,15 +163,18 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 		timepoint_e = high_resolution_clock::now();
 	}
 	
+	// Get the process rank and number of process
 	int rank, nprocs;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 	
+	// The first process print the result and deallocate the matrix
 	if (rank == 0) {
 		cout << "-----  PARALLEL -----" << endl << flush;
 		if (matrix_flipped) {
 			double ** intermediary_matrix = flipMatrix(cols, rows, matrix);
 			printMatrix(rows, cols, intermediary_matrix);
+			
 			deallocateMatrix(rows, intermediary_matrix);
 			deallocateMatrix(cols, matrix);
 		}

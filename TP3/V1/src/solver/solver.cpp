@@ -61,18 +61,17 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
     double * linePrevBuffer = new double[cols];
     double * lineCurrBuffer = new double[cols];
 
+	// Calculs des index des lignes à prendre en charge
     int y_range = (rows > nprocs) ? rows/nprocs : 1;
     int y_reste = (rows > nprocs) ? rows % nprocs : 0;
 
     int y_begin = rank * y_range ;
     int y_end = y_range*(rank+1) ;
 
-
     if (y_reste)
     {
         if(rank<y_reste)
         {
-            ++y_range;
             y_begin += rank ;
             y_end += (rank+1) ;
         }
@@ -83,17 +82,21 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
         }
     }
     
+	// Si le nombre de processus alloué est supérieur.. 
+	// ..au nombre de lignes à calculer alors :
+	// 	  => Utiliser 1 ligne par processus
     if (nprocs > rows) nprocs = rows;
+	//    => Ne rien faire avec les autres processus
     if (rank >= rows) return;
 
     for (int k = 0; k < iterations; ++k)
     {
-        // 1er => sans top
+        // 1er => sans voisin du haut
         if (rank == 0)
         {
-            // Send derniere col
+            // Send last row
             MPI_Send(matrix[y_end-1],cols,MPI_DOUBLE, rank + 1, k, MPI_COMM_WORLD);            
-            // Receive 1 ere ligne
+            // Receive missing row
             MPI_Recv(matrix[y_end], cols, MPI_DOUBLE, rank + 1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
             
             // Calculs
@@ -114,12 +117,12 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                 memcpy(linePrevBuffer, lineCurrBuffer, cols * sizeof(double));
             } 
         }
-        // dernier => sans bottom
+        // dernier => sans voisin du bas
         else if(rank==nprocs-1)
         {
-            // Send 1 ere ligne
+            // Send first row
             MPI_Send(matrix[y_begin],cols,MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD);
-            // Receive derniere ligne
+            // Receive missing row
             MPI_Recv(matrix[y_begin-1], cols, MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE); 
 
             // Calculs
@@ -141,14 +144,15 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                 memcpy(linePrevBuffer, lineCurrBuffer, cols * sizeof(double));
             }
         }
-        else // si nprocs ==2 => pas executé
+        else // processus du milieu : si nprocs == 2 => pas executé
         {
-            // Send 1 ere ligne
+            // Send first row
             MPI_Send(matrix[y_begin],cols,MPI_DOUBLE, rank-1,k,MPI_COMM_WORLD);
+			// Send last row
             MPI_Send( matrix[y_end-1],cols,MPI_DOUBLE, rank+1,k,MPI_COMM_WORLD);
 
-            // Receive derniere ligne
-            MPI_Recv(matrix[y_begin-1], cols, MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE);  
+            // Receive missing rows
+            MPI_Recv(matrix[y_begin-1], cols, MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE); 		
             MPI_Recv(matrix[y_end], cols, MPI_DOUBLE, rank+1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE);  
 
             //Calculs
@@ -172,6 +176,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
         }
     }
 
+	// Le 1er processus recoit les données calculées par tous les autres processus
     if(rank == 0) {
         for (int i = 1; i < nprocs; i++) {
 			double * recv_buffer = new double[cols];
@@ -185,6 +190,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
 			}
 		}
     }
+	// Les processus envoient leur données au 1er processus
     else {
 		MPI_Send(&y_begin, 1, MPI_INT, 0, S_INDEX_CONTROL, MPI_COMM_WORLD);
 		MPI_Send(&y_end, 1, MPI_INT, 0, S_INDEX_CONTROL, MPI_COMM_WORLD);
