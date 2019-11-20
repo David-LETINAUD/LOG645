@@ -15,9 +15,7 @@ using std::this_thread::sleep_for;
 using std::chrono::microseconds;
 using std::cout;
 
-
-#define LEN(arr) ((int) (sizeof (arr) / sizeof (arr)[0]))
-
+// Définition des tags de contrôle pour l'envoi de certains messages MPI
 #define S_INDEX_CONTROL 10000
 #define S_MATRIX_XFER   10001
 
@@ -62,6 +60,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
     double * lineCurrBuffer = new double[cols];
 
 	// Calculs des index des lignes à prendre en charge
+	// pour chaque processus
     int y_range = (rows > nprocs) ? rows/nprocs : 1;
     int y_reste = (rows > nprocs) ? rows % nprocs : 0;
 
@@ -82,21 +81,22 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
         }
     }
     
-	// Si le nombre de processus alloué est supérieur.. 
-	// ..au nombre de lignes à calculer alors :
-	// 	  => Utiliser 1 ligne par processus
+	// Si le nombre de processus alloué est supérieur au nombre de
+	// lignes à calculer, n'utiliser qu'une ligne par processus et
+	// quitter l'exécution de la fonction sur les processus qui n'auront
+	// pas de lignes attribuées.
     if (nprocs > rows) nprocs = rows;
-	//    => Ne rien faire avec les autres processus
     if (rank >= rows) return;
 
     for (int k = 0; k < iterations; ++k)
     {
-        // 1er => sans voisin du haut
+        // Le premier processus n'a aucun processus voisin en haut de
+		// lui, on envoie seulement les messages au voisin en dessous.
         if (rank == 0)
         {
-            // Send last row
+            // Envoyer la dernière ligne gérée par le processus
             MPI_Send(matrix[y_end-1],cols,MPI_DOUBLE, rank + 1, k, MPI_COMM_WORLD);            
-            // Receive missing row
+            // Recevoir la première ligne du processus voisin (dessous)
             MPI_Recv(matrix[y_end], cols, MPI_DOUBLE, rank + 1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
             
             // Calculs
@@ -113,16 +113,17 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                     sleep_for(microseconds(sleep));
                     matrix[i][j] = (double) c * (1.0 - 4.0 * td / h_square) + (t + b + l + r) * (td / h_square);
                 }
-                // Màj de line PrevBuf
+                // Mise à jour de linePrevBuf
                 memcpy(linePrevBuffer, lineCurrBuffer, cols * sizeof(double));
             } 
         }
-        // dernier => sans voisin du bas
-        else if(rank==nprocs-1)
+        // Le dernier processus n'a aucun voisin en dessous de lui, on
+		// envoie seulement les messages au voisin du dessus.
+        else if (rank == nprocs - 1)
         {
-            // Send first row
+            // Envoyer la première ligne gérée par le processus
             MPI_Send(matrix[y_begin],cols,MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD);
-            // Receive missing row
+            // Recevoir la dernière ligne du processus voisin (dessus)
             MPI_Recv(matrix[y_begin-1], cols, MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE); 
 
             // Calculs
@@ -144,14 +145,21 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
                 memcpy(linePrevBuffer, lineCurrBuffer, cols * sizeof(double));
             }
         }
-        else // processus du milieu : si nprocs == 2 => pas executé
+        // Les processus se trouvant entre le premier et le dernier
+        // processus ont des voisins au dessus et en dessous d'eux, donc
+        // ils doivent envoyer leurs premières lignes et leurs dernières
+        // lignes.
+        else
         {
-            // Send first row
+            // Envoyer la première ligne gérée par le processus au
+			// processus voisin au dessus
             MPI_Send(matrix[y_begin],cols,MPI_DOUBLE, rank-1,k,MPI_COMM_WORLD);
-			// Send last row
+			// Envoyer la dernière ligne gérée par le processus au
+			// processus voisin en dessous
             MPI_Send( matrix[y_end-1],cols,MPI_DOUBLE, rank+1,k,MPI_COMM_WORLD);
 
-            // Receive missing rows
+            // Recevoir la première ligne du processus voisin en dessous
+            // et la dernière ligne du processus voisin au dessus
             MPI_Recv(matrix[y_begin-1], cols, MPI_DOUBLE, rank-1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE); 		
             MPI_Recv(matrix[y_end], cols, MPI_DOUBLE, rank+1, k, MPI_COMM_WORLD,MPI_STATUS_IGNORE);  
 
@@ -176,24 +184,35 @@ void solvePar(int rows, int cols, int iterations, double td, double h, int sleep
         }
     }
 
-	// Le 1er processus recoit les données calculées par tous les autres processus
+	// Le premier processus reçoit les données calculées par tous les
+	// autres processus
     if(rank == 0) {
         for (int i = 1; i < nprocs; i++) {
 			double * recv_buffer = new double[cols];
 			
+			// On reçoit les index correspondant à la plage de lignes
+			// de laquelle le processus est responsable 
 			int start_index, end_index;
 			MPI_Recv(&start_index, 1, MPI_INT, i, S_INDEX_CONTROL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			MPI_Recv(&end_index, 1, MPI_INT, i, S_INDEX_CONTROL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			
+			// On reçoit les lignes calculées par le processus et on les
+			// place dans la matrice
 			for (int j = start_index; j < end_index; j++) {
 				MPI_Recv(recv_buffer, cols, MPI_DOUBLE, i, S_MATRIX_XFER, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 				memcpy(matrix[j], recv_buffer, cols * sizeof(double));
 			}
 		}
     }
-	// Les processus envoient leur données au 1er processus
+	// Les processus envoient leur données au premier processus
     else {
+		// Envoi des index correspondant à la plage de lignes de
+		// laquelle le processus est responsable
 		MPI_Send(&y_begin, 1, MPI_INT, 0, S_INDEX_CONTROL, MPI_COMM_WORLD);
 		MPI_Send(&y_end, 1, MPI_INT, 0, S_INDEX_CONTROL, MPI_COMM_WORLD);
+		
+		// On envoie les lignes calculées par le processus courant au
+		// premier processus
 		for (int j = y_begin; j < y_end; j++) {
 			double * current_column = matrix[j];
 			MPI_Send(current_column, cols, MPI_DOUBLE, 0, S_MATRIX_XFER, MPI_COMM_WORLD);

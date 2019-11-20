@@ -139,11 +139,11 @@ long sequential(int rows, int cols, int iters, double td, double h, int sleep) {
 long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	
 	// On souhaite paralléliser sur le nombre de lignes.
-	// Si le nombre de colonnes est plus grand que le nombre de lignes,..
-	// ..on renverse la matrice (on la re-renversera plus tard)
+	// Si le nombre de colonnes est plus grand que le nombre de lignes,
+	// on renverse la matrice (on la re-renversera plus tard)
 	bool matrix_flipped = cols > rows;
-
 	double ** matrix;
+	
 	if (matrix_flipped) {
 		matrix = allocateMatrix(cols, rows);
 		fillMatrix(cols, rows, matrix);
@@ -152,6 +152,7 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 		fillMatrix(rows, cols, matrix);
 	}
 	
+	// Calcul du temps d'exécution des algorithmes
 	time_point<high_resolution_clock> timepoint_s, timepoint_e;
 	if (matrix_flipped) {
 		timepoint_s = high_resolution_clock::now();
@@ -171,6 +172,8 @@ long parallel(int rows, int cols, int iters, double td, double h, int sleep) {
 	// The first process print the result and deallocate the matrix
 	if (rank == 0) {
 		cout << "-----  PARALLEL -----" << endl << flush;
+		
+		// Redresser la matrice si elle a été préalablement renversée
 		if (matrix_flipped) {
 			double ** intermediary_matrix = flipMatrix(cols, rows, matrix);
 			printMatrix(rows, cols, intermediary_matrix);
