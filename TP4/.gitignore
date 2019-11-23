@@ -1,6 +1,11 @@
 lab4
 build/
 
+# visual project files
+*.sln
+*.vcxproj
+*.vcxproj.*
+
 # Prerequisites
 *.d
 
