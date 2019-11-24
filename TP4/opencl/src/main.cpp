@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <chrono>
 #include <thread>
+#include <string>
 
 #include "matrix/matrix.hpp"
 #include "output/output.hpp"

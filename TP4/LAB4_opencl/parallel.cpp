@@ -7,8 +7,8 @@
 #include "windows.h"
 #include "parallel.hpp"
 
-char* readFile(const char* fileName);
-void addWithOpenCl(const int* a, const int* b, int* c, int elements, const char* kernelSource);
+char * readFile(const char * fileName);
+void addWithOpenCl(const int * a, const int * b, int * c, int elements, const char * kernelSource);
 
 using std::cout;
 using std::flush;
@@ -23,7 +23,7 @@ inline void errorCheck(cl_int code, const char* file, int line) {
 	}
 }
 
-void solvePar(int rows, int cols, int iterations, double td, double h, double** matrix, const char* kernelFileName) {
+void solvePar(int rows, int cols, int iterations, double td, double h, double ** matrix, const char * kernelFileName) {
 	cout << "Do OpenCl related stuff here!" << endl << flush;
 
 	// Example.
@@ -32,15 +32,15 @@ void solvePar(int rows, int cols, int iterations, double td, double h, double** 
 	const int b[elements] = { 5, 4, 3, 2, 1 };
 	int c[elements] = { 0 };
 
-	char* kernelSource = readFile(kernelFileName);
+	char * kernelSource = readFile(kernelFileName);
 	printf("%s\n", kernelSource);
-
+	
 	Sleep(3000);
 
 	addWithOpenCl(a, b, c, elements, kernelSource);
 }
 
-char* readFile(const char* fileName) {
+char * readFile(const char * fileName) {
 	int length;
 
 	std::ifstream file(fileName, std::ifstream::in | std::ios::binary);
@@ -48,7 +48,7 @@ char* readFile(const char* fileName) {
 	length = file.tellg();
 	file.seekg(0, std::ios::beg);
 
-	char* buffer = (char*)malloc(length + 1);
+	char * buffer = (char *) malloc(length + 1);
 	file.read(buffer, length);
 	file.close();
 
@@ -57,7 +57,7 @@ char* readFile(const char* fileName) {
 	return buffer;
 }
 
-void addWithOpenCl(const int* a, const int* b, int* c, int elements, const char* kernelSource) {
+void addWithOpenCl(const int * a, const int * b, int * c, int elements, const char * kernelSource) {
 	int bytes = elements * sizeof(int);
 	cl_int err = CL_SUCCESS;
 
@@ -78,7 +78,7 @@ void addWithOpenCl(const int* a, const int* b, int* c, int elements, const char*
 	errCheck(err);
 
 	// Compile the source program.
-	cl_program program = clCreateProgramWithSource(context, 1, (const char**)& kernelSource, NULL, &err);
+	cl_program program = clCreateProgramWithSource(context, 1, (const char **)&kernelSource, NULL, &err);
 	errCheck(err);
 
 	errCheck(clBuildProgram(program, 0, NULL, NULL, NULL, NULL));
