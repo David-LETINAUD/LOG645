@@ -6,10 +6,11 @@
 
 #include "windows.h"
 #include "parallel.hpp"
+#include "matrix.hpp"
 
 char * readFile(const char * fileName);
 //void addWithOpenCl(const int * a, const int * b, int * c, int elements, const char * kernelSource);
-void addWithOpenCl(int *rows, int *cols, int *iterations, double *td, double *h, double* initial_matrix, double* final_matrix, const char* kernelSource);
+void addWithOpenCl(int rows, int cols, int iterations, double td, double h, double* initial_matrix, double* final_matrix, const char* kernelSource);
 
 using std::cout;
 using std::flush;
@@ -33,6 +34,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, double **
 	double *initial_matrix = (double*) malloc(matrix_size * sizeof(double));
 	double *final_matrix = (double*)malloc(matrix_size * sizeof(double));
 
+	convert_to_1d_matrix(rows, cols, matrix, initial_matrix);
 
 	/*
 	const int elements = 5;
@@ -41,11 +43,12 @@ void solvePar(int rows, int cols, int iterations, double td, double h, double **
 	int c[elements] = { 0 };*/
 
 	char * kernelSource = readFile(kernelFileName);
-	printf("%s\n", kernelSource);
+	//printf("%s\n", kernelSource);
 	
 	Sleep(3000);
 
-	addWithOpenCl(&rows, &cols, &iterations, &td, &h, initial_matrix, final_matrix, kernelSource);
+	addWithOpenCl(rows, cols, iterations, td, h, initial_matrix, final_matrix, kernelSource);
+	convert_to_2d_matrix(rows, cols, final_matrix, matrix);
 }
 
 char * readFile(const char * fileName) {
@@ -65,11 +68,11 @@ char * readFile(const char * fileName) {
 	return buffer;
 }
 
-void addWithOpenCl(int* rows, int* cols, int* iterations, double* td, double* h, double* initial_matrix, double* final_matrix, const char* kernelSource) {
+void addWithOpenCl(int rows, int cols, int iterations, double td, double h, double* initial_matrix, double* final_matrix, const char* kernelSource) {
 	// TO check error_code : https://gist.github.com/bmount/4a7144ce801e5569a0b6
 
 	//int bytes = elements * sizeof(int);
-	int matrix_size = (const int)*rows * (const int)*cols;
+	int matrix_size = (const int)rows * (const int)cols;
 	size_t matrix_bytes = sizeof(double) * matrix_size;
 	
 	cl_int err = CL_SUCCESS;
@@ -105,7 +108,7 @@ void addWithOpenCl(int* rows, int* cols, int* iterations, double* td, double* h,
 
 
 	// Create device buffers.
-	cl_mem dev_rows = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(rows), NULL, &err);
+	/*cl_mem dev_rows = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(rows), NULL, &err);
 	errCheck(err);
 	cl_mem dev_cols = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cols), NULL, &err);
 	errCheck(err);
@@ -114,7 +117,7 @@ void addWithOpenCl(int* rows, int* cols, int* iterations, double* td, double* h,
 	cl_mem dev_td = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(td), NULL, &err);
 	errCheck(err);
 	cl_mem dev_h = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(h), NULL, &err);
-	errCheck(err);
+	errCheck(err);*/
 	cl_mem dev_initial_matrix = clCreateBuffer(context, CL_MEM_READ_WRITE, matrix_bytes, NULL, &err);
 	errCheck(err);
 	cl_mem dev_final_matrix = clCreateBuffer(context, CL_MEM_READ_WRITE, matrix_bytes, NULL, &err);
@@ -131,11 +134,11 @@ void addWithOpenCl(int* rows, int* cols, int* iterations, double* td, double* h,
 	/*errCheck(clEnqueueWriteBuffer(queue, dev_a, CL_TRUE, 0, bytes, a, 0, NULL, NULL));
 	errCheck(clEnqueueWriteBuffer(queue, dev_b, CL_TRUE, 0, bytes, b, 0, NULL, NULL));*/
 
-	errCheck(clEnqueueWriteBuffer(queue, dev_rows, CL_TRUE, 0, sizeof(rows), rows, 0, NULL, NULL));
+	/*errCheck(clEnqueueWriteBuffer(queue, dev_rows, CL_TRUE, 0, sizeof(rows), rows, 0, NULL, NULL));
 	errCheck(clEnqueueWriteBuffer(queue, dev_cols, CL_TRUE, 0, sizeof(cols), cols, 0, NULL, NULL));
 	errCheck(clEnqueueWriteBuffer(queue, dev_it, CL_TRUE, 0, sizeof(iterations), iterations, 0, NULL, NULL));
 	errCheck(clEnqueueWriteBuffer(queue, dev_td, CL_TRUE, 0, sizeof(td), td, 0, NULL, NULL));
-	errCheck(clEnqueueWriteBuffer(queue, dev_h, CL_TRUE, 0, sizeof(h), h, 0, NULL, NULL));
+	errCheck(clEnqueueWriteBuffer(queue, dev_h, CL_TRUE, 0, sizeof(h), h, 0, NULL, NULL));*/
 	errCheck(clEnqueueWriteBuffer(queue, dev_initial_matrix, CL_TRUE, 0, matrix_bytes, initial_matrix, 0, NULL, NULL));
 	//errCheck(clEnqueueWriteBuffer(queue, dev_final_matrix, CL_TRUE, 0, sizeof(double) * matrix_size, final_matrix, 0, NULL, NULL));
 
@@ -145,11 +148,11 @@ void addWithOpenCl(int* rows, int* cols, int* iterations, double* td, double* h,
 	errCheck(clSetKernelArg(kernel, 1, sizeof(cl_mem), &dev_b));
 	errCheck(clSetKernelArg(kernel, 2, sizeof(cl_mem), &dev_c));
 	errCheck(clSetKernelArg(kernel, 3, sizeof(int), &elements));*/
-	errCheck(clSetKernelArg(kernel, 0,	sizeof(rows), &dev_rows));
-	errCheck(clSetKernelArg(kernel, 1,  sizeof(cols), &dev_cols));
-	errCheck(clSetKernelArg(kernel, 2,	sizeof(iterations), &dev_it));
-	errCheck(clSetKernelArg(kernel, 3,  sizeof(double), &dev_td));
-	errCheck(clSetKernelArg(kernel, 4,  sizeof(double), &dev_h));
+	errCheck(clSetKernelArg(kernel, 0,	sizeof(rows), &rows));
+	errCheck(clSetKernelArg(kernel, 1,  sizeof(cols), &cols));
+	errCheck(clSetKernelArg(kernel, 2,	sizeof(iterations), &iterations));
+	errCheck(clSetKernelArg(kernel, 3,  sizeof(td), &td));
+	errCheck(clSetKernelArg(kernel, 4,  sizeof(h), &h));
 	errCheck(clSetKernelArg(kernel, 5,  sizeof(cl_mem), &dev_initial_matrix));
 	errCheck(clSetKernelArg(kernel, 6,  sizeof(cl_mem), &dev_final_matrix));
 
@@ -164,25 +167,29 @@ void addWithOpenCl(int* rows, int* cols, int* iterations, double* td, double* h,
 	// Execute the kernel.
 	const size_t localSize = matrix_size;
 	const size_t globalSize =  matrix_size;
-	errCheck(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &globalSize, &localSize, 0, NULL, NULL));
+	
+	for (int k = 0; k < iterations; k++) {
+		errCheck(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &globalSize, &localSize, 0, NULL, NULL));
 
-	// Wait for the kernel the terminate.
-	errCheck(clFinish(queue));
+		// Wait for the kernel the terminate.
+		errCheck(clFinish(queue));
 
-	// Write device data in our output buffer.
-	//errCheck(clEnqueueReadBuffer(queue, dev_c, CL_TRUE, 0, bytes, c, 0, NULL, NULL));
-	errCheck(clEnqueueReadBuffer(queue, dev_final_matrix, CL_TRUE, 0, matrix_bytes, final_matrix, 0, NULL, NULL));
+		// Write device data in our output buffer.
+		//errCheck(clEnqueueReadBuffer(queue, dev_c, CL_TRUE, 0, bytes, c, 0, NULL, NULL));
+		errCheck(clEnqueueReadBuffer(queue, dev_final_matrix, CL_TRUE, 0, matrix_bytes, final_matrix, 0, NULL, NULL));
+		errCheck(clEnqueueWriteBuffer(queue, dev_initial_matrix, CL_TRUE, 0, matrix_bytes, final_matrix, 0, NULL, NULL));
+	}
 
 	// Clear memory.
 	/*errCheck(clReleaseMemObject(dev_a));
 	errCheck(clReleaseMemObject(dev_b));
 	errCheck(clReleaseMemObject(dev_c));*/
 
-	errCheck(clReleaseMemObject(dev_rows));
+	/*errCheck(clReleaseMemObject(dev_rows));
 	errCheck(clReleaseMemObject(dev_cols));
 	errCheck(clReleaseMemObject(dev_it));
 	errCheck(clReleaseMemObject(dev_td));
-	errCheck(clReleaseMemObject(dev_h));
+	errCheck(clReleaseMemObject(dev_h));*/
 	errCheck(clReleaseMemObject(dev_initial_matrix));
 	errCheck(clReleaseMemObject(dev_final_matrix));
 
@@ -195,7 +202,7 @@ void addWithOpenCl(int* rows, int* cols, int* iterations, double* td, double* h,
 	cout << "c = { " << final_matrix[0] << flush;
 	for (int i = 1; i < matrix_size; i++) {
 		cout << ", " << final_matrix[i] << flush;
-		if (!i % *cols)
+		if (!i % cols)
 			cout << '\n' << flush;
 	}
 

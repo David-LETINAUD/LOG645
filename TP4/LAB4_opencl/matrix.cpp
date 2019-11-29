@@ -25,3 +25,19 @@ void fillMatrix(int rows, int cols, double ** matrix) {
         }
     }
 }
+
+void convert_to_1d_matrix(int rows, int cols, double** matrix_init, double* matrix_1d) {
+	for (int y = 0; y < rows; y++) {
+		for (int x = 0; x < cols; x++) {
+			matrix_1d[y * cols + x] = matrix_init[y][x];
+		}
+	}
+}
+
+void convert_to_2d_matrix(int rows, int cols, double* matrix_init, double** matrix_2d) {
+	for (int i = 0; i < rows * cols; i++) {
+		int x = i % cols;
+		int y = i / cols;
+		matrix_2d[y][x] = matrix_init[i];
+	}
+}

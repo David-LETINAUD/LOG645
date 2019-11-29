@@ -1,0 +1,4 @@
+﻿  parallel.cpp
+C:\Users\AQ38840\Desktop\LOG645\TP4\LAB4_opencl\parallel.cpp(59,21): warning C4244:  '=': conversion from 'std::streamoff' to 'int', possible loss of data
+C:\Users\AQ38840\Desktop\LOG645\TP4\LAB4_opencl\parallel.cpp(205,16): warning C4804:  '%': unsafe use of type 'bool' in operation
+  Project1.vcxproj -> C:\Users\AQ38840\Desktop\LOG645\TP4\LAB4_opencl\Debug\Project1.exe

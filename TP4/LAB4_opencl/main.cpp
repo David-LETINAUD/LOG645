@@ -62,15 +62,18 @@ int main(int argc, char* argv[]) {
 
 	cout << "-----  INITIAL   -----" << endl << flush;
 	initial(rows, cols, matrix);
-	printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
+	//printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
+	printMatrix(rows, cols, matrix);
 
 	cout << "----- SEQUENTIAL -----" << endl << flush;
 	runtime_seq = sequential(rows, cols, iters, td, h, matrix);
-	printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
+	//printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
+	printMatrix(rows, cols, matrix);
 
 	cout << "-----  PARALLEL  -----" << endl << flush;
 	runtime_par = parallel(rows, cols, iters, td, h, matrix, kernelFileName);
-	printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
+	//printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
+	printMatrix(rows, cols, matrix);
 
 	printStatistics(runtime_seq, runtime_par);
 
