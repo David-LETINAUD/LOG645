@@ -1,11 +1,12 @@
 #include "matrix.hpp"
 
 double ** allocateMatrix(int rows, int cols) {
-    double ** matrix = new double*[rows];
+	double ** matrix = new double*[rows];
 
     for(int i = 0; i < rows; i++) {
         matrix[i] = new double[cols];
     }
+
 
     return matrix;
 }

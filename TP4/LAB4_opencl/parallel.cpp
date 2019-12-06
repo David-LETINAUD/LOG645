@@ -165,8 +165,15 @@ void addWithOpenCl(int rows, int cols, int iterations, double td, double h, doub
 	cout << "TAILLE PREF: " << preffered_wg_size << "\n";
 	cout << "TAILLE MAX : " << max_wg_size << "\n";
 	// Execute the kernel.
-	const size_t localSize = matrix_size;
-	const size_t globalSize =  matrix_size;
+	cout << "MATRIX SIZE: " << matrix_size << "\n";
+	//const size_t localSize = matrix_size;
+	//const size_t globalSize =  matrix_size;
+
+	int number_of_blocks = matrix_size / max_wg_size;
+	if (number_of_blocks % max_wg_size != 0) number_of_blocks++;
+
+	const size_t localSize = max_wg_size;
+	const size_t globalSize =  number_of_blocks * max_wg_size;
 	
 	for (int k = 0; k < iterations; k++) {
 		errCheck(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &globalSize, &localSize, 0, NULL, NULL));
@@ -199,12 +206,12 @@ void addWithOpenCl(int rows, int cols, int iterations, double td, double h, doub
 	errCheck(clReleaseCommandQueue(queue));
 	errCheck(clReleaseContext(context));
 
-	cout << "c = { " << final_matrix[0] << flush;
+	/*cout << "c = { " << final_matrix[0] << flush;
 	for (int i = 1; i < matrix_size; i++) {
 		cout << ", " << final_matrix[i] << flush;
 		if (!i % cols)
 			cout << '\n' << flush;
 	}
 
-	cout << " }" << endl << flush;
+	cout << " }" << endl << flush;*/
 }
