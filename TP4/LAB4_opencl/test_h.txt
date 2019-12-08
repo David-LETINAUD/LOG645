@@ -1,0 +1,60 @@
+Command: C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.15 1 0 0 0 0 kernel.cl
+-----  INITIAL   -----
+
+----- SEQUENTIAL -----
+
+-----  PARALLEL  -----
+
+Runtime sequential: 0.630655 seconds
+Runtime parallel  : 0.202264 seconds
+Acceleration      : 3.11798
+Command: C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.1 1 0 0 0 0 kernel.cl
+-----  INITIAL   -----
+
+----- SEQUENTIAL -----
+
+-----  PARALLEL  -----
+
+Runtime sequential: 0.601781 seconds
+Runtime parallel  : 0.20283 seconds
+Acceleration      : 2.96692
+Command: C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.01 1 0 0 0 0 kernel.cl
+-----  INITIAL   -----
+
+----- SEQUENTIAL -----
+
+-----  PARALLEL  -----
+
+Runtime sequential: 0.654145 seconds
+Runtime parallel  : 0.202476 seconds
+Acceleration      : 3.23073
+Command: C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.0075 1 0 0 0 0 kernel.cl
+-----  INITIAL   -----
+
+----- SEQUENTIAL -----
+
+-----  PARALLEL  -----
+
+Runtime sequential: 0.591793 seconds
+Runtime parallel  : 0.198382 seconds
+Acceleration      : 2.9831
+Command: C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.005 1 0 0 0 0 kernel.cl
+-----  INITIAL   -----
+
+----- SEQUENTIAL -----
+
+-----  PARALLEL  -----
+
+Runtime sequential: 0.600988 seconds
+Runtime parallel  : 0.200236 seconds
+Acceleration      : 3.0014
+Command: C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.0025 1 0 0 0 0 kernel.cl
+-----  INITIAL   -----
+
+----- SEQUENTIAL -----
+
+-----  PARALLEL  -----
+
+Runtime sequential: 0.607082 seconds
+Runtime parallel  : 0.203993 seconds
+Acceleration      : 2.97599

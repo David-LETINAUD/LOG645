@@ -104,46 +104,16 @@ void addWithOpenCl(int rows, int cols, int iterations, double td, double h, doub
 
 
 	// Create device buffers.
-	/*cl_mem dev_rows = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(rows), NULL, &err);
-	errCheck(err);
-	cl_mem dev_cols = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(cols), NULL, &err);
-	errCheck(err);
-	cl_mem dev_it = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(iterations), NULL, &err);
-	errCheck(err);
-	cl_mem dev_td = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(td), NULL, &err);
-	errCheck(err);
-	cl_mem dev_h = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(h), NULL, &err);
-	errCheck(err);*/
 	cl_mem dev_initial_matrix = clCreateBuffer(context, CL_MEM_READ_WRITE, matrix_bytes, NULL, &err);
 	errCheck(err);
 	cl_mem dev_final_matrix = clCreateBuffer(context, CL_MEM_READ_WRITE, matrix_bytes, NULL, &err);
 	errCheck(err);
 
-	/*cl_mem dev_a = clCreateBuffer(context, CL_MEM_READ_ONLY, bytes, NULL, &err);
-	errCheck(err);
-	cl_mem dev_b = clCreateBuffer(context, CL_MEM_READ_ONLY, bytes, NULL, &err);
-	errCheck(err);
-	cl_mem dev_c = clCreateBuffer(context, CL_MEM_WRITE_ONLY, bytes, NULL, &err);
-	errCheck(err);*/
-
 	// Write host data to the device.
-	/*errCheck(clEnqueueWriteBuffer(queue, dev_a, CL_TRUE, 0, bytes, a, 0, NULL, NULL));
-	errCheck(clEnqueueWriteBuffer(queue, dev_b, CL_TRUE, 0, bytes, b, 0, NULL, NULL));*/
-
-	/*errCheck(clEnqueueWriteBuffer(queue, dev_rows, CL_TRUE, 0, sizeof(rows), rows, 0, NULL, NULL));
-	errCheck(clEnqueueWriteBuffer(queue, dev_cols, CL_TRUE, 0, sizeof(cols), cols, 0, NULL, NULL));
-	errCheck(clEnqueueWriteBuffer(queue, dev_it, CL_TRUE, 0, sizeof(iterations), iterations, 0, NULL, NULL));
-	errCheck(clEnqueueWriteBuffer(queue, dev_td, CL_TRUE, 0, sizeof(td), td, 0, NULL, NULL));
-	errCheck(clEnqueueWriteBuffer(queue, dev_h, CL_TRUE, 0, sizeof(h), h, 0, NULL, NULL));*/
 	errCheck(clEnqueueWriteBuffer(queue, dev_initial_matrix, CL_TRUE, 0, matrix_bytes, initial_matrix, 0, NULL, NULL));
-	//errCheck(clEnqueueWriteBuffer(queue, dev_final_matrix, CL_TRUE, 0, sizeof(double) * matrix_size, final_matrix, 0, NULL, NULL));
 
 
 	// Setup function arguments.
-	/*errCheck(clSetKernelArg(kernel, 0, sizeof(cl_mem), &dev_a));
-	errCheck(clSetKernelArg(kernel, 1, sizeof(cl_mem), &dev_b));
-	errCheck(clSetKernelArg(kernel, 2, sizeof(cl_mem), &dev_c));
-	errCheck(clSetKernelArg(kernel, 3, sizeof(int), &elements));*/
 	errCheck(clSetKernelArg(kernel, 0,	sizeof(rows), &rows));
 	errCheck(clSetKernelArg(kernel, 1,  sizeof(cols), &cols));
 	errCheck(clSetKernelArg(kernel, 2,	sizeof(iterations), &iterations));
@@ -152,18 +122,17 @@ void addWithOpenCl(int rows, int cols, int iterations, double td, double h, doub
 	errCheck(clSetKernelArg(kernel, 5,  sizeof(cl_mem), &dev_initial_matrix));
 	errCheck(clSetKernelArg(kernel, 6,  sizeof(cl_mem), &dev_final_matrix));
 
+	// Get prefered and max Work group size.
 	size_t preffered_wg_size;
 	errCheck(clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &preffered_wg_size, NULL));
 
 	size_t max_wg_size;
 	errCheck(clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &max_wg_size, NULL));
 
-	cout << "TAILLE PREF: " << preffered_wg_size << "\n";
-	cout << "TAILLE MAX : " << max_wg_size << "\n";
-	// Execute the kernel.
-	cout << "MATRIX SIZE: " << matrix_size << "\n";
-	//const size_t localSize = matrix_size;
-	//const size_t globalSize =  matrix_size;
+	//cout << "TAILLE PREF: " << preffered_wg_size << "\n";
+	//cout << "TAILLE MAX : " << max_wg_size << "\n";
+	
+	//cout << "MATRIX SIZE: " << matrix_size << "\n";
 
 	int number_of_blocks = matrix_size / max_wg_size;
 	if (number_of_blocks % max_wg_size != 0) number_of_blocks++;
@@ -171,6 +140,7 @@ void addWithOpenCl(int rows, int cols, int iterations, double td, double h, doub
 	const size_t localSize = max_wg_size;
 	const size_t globalSize =  number_of_blocks * max_wg_size;
 	
+	// Execute the kernel.
 	for (int k = 0; k < iterations; k++) {
 		errCheck(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &globalSize, &localSize, 0, NULL, NULL));
 
@@ -178,21 +148,11 @@ void addWithOpenCl(int rows, int cols, int iterations, double td, double h, doub
 		errCheck(clFinish(queue));
 
 		// Write device data in our output buffer.
-		//errCheck(clEnqueueReadBuffer(queue, dev_c, CL_TRUE, 0, bytes, c, 0, NULL, NULL));
 		errCheck(clEnqueueReadBuffer(queue, dev_final_matrix, CL_TRUE, 0, matrix_bytes, final_matrix, 0, NULL, NULL));
 		errCheck(clEnqueueWriteBuffer(queue, dev_initial_matrix, CL_TRUE, 0, matrix_bytes, final_matrix, 0, NULL, NULL));
 	}
 
 	// Clear memory.
-	/*errCheck(clReleaseMemObject(dev_a));
-	errCheck(clReleaseMemObject(dev_b));
-	errCheck(clReleaseMemObject(dev_c));*/
-
-	/*errCheck(clReleaseMemObject(dev_rows));
-	errCheck(clReleaseMemObject(dev_cols));
-	errCheck(clReleaseMemObject(dev_it));
-	errCheck(clReleaseMemObject(dev_td));
-	errCheck(clReleaseMemObject(dev_h));*/
 	errCheck(clReleaseMemObject(dev_initial_matrix));
 	errCheck(clReleaseMemObject(dev_final_matrix));
 

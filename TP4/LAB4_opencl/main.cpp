@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 
 	deallocateMatrix(rows, matrix);
 
-	system("pause");
+	//system("pause");
 	return EXIT_SUCCESS;
 }
 
