@@ -116,10 +116,18 @@ long sequential(int rows, int cols, int iters, double td, double h, double ** ma
 
 long parallel(int rows, int cols, int iters, double td, double h, double ** matrix, const char * kernelFileName) {
 	fillMatrix(rows, cols, matrix);
+	const int matrix_size = (const int)rows * (const int)cols;
+
+	double* initial_matrix = (double*)malloc(matrix_size * sizeof(double));
+	double* final_matrix = (double*)malloc(matrix_size * sizeof(double));
+
+	convert_to_1d_matrix(rows, cols, matrix, initial_matrix);
 
 	time_point<high_resolution_clock> timepoint_s = high_resolution_clock::now();
-	solvePar(rows, cols, iters, td, h, matrix, kernelFileName);
+	solvePar(rows, cols, iters, td, h, initial_matrix, final_matrix, kernelFileName);
 	time_point<high_resolution_clock> timepoint_e = high_resolution_clock::now();
+
+	convert_to_2d_matrix(rows, cols, final_matrix, matrix);
 
 	return duration_cast<microseconds>(timepoint_e - timepoint_s).count();
 }

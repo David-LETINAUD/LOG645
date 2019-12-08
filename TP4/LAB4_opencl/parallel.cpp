@@ -25,22 +25,16 @@ inline void errorCheck(cl_int code, const char* file, int line) {
 	}
 }
 
-void solvePar(int rows, int cols, int iterations, double td, double h, double ** matrix, const char * kernelFileName) {
+void solvePar(int rows, int cols, int iterations, double td, double h, double* initial_matrix, double* final_matrix, const char * kernelFileName) {
 	cout << "Do OpenCl related stuff here!" << endl << flush;
 
 	// Example.
-	const int matrix_size = (const int)rows * (const int)cols;
+	/*const int matrix_size = (const int)rows * (const int)cols;
 
 	double *initial_matrix = (double*) malloc(matrix_size * sizeof(double));
-	double *final_matrix = (double*)malloc(matrix_size * sizeof(double));
+	double *final_matrix = (double*)malloc(matrix_size * sizeof(double));*/
 
-	convert_to_1d_matrix(rows, cols, matrix, initial_matrix);
-
-	/*
-	const int elements = 5;
-	const int a[elements] = { 1, 2, 3, 4, 5 };
-	const int b[elements] = { 5, 4, 3, 2, 1 };
-	int c[elements] = { 0 };*/
+	//convert_to_1d_matrix(rows, cols, matrix, initial_matrix);
 
 	char * kernelSource = readFile(kernelFileName);
 	//printf("%s\n", kernelSource);
@@ -48,7 +42,7 @@ void solvePar(int rows, int cols, int iterations, double td, double h, double **
 	Sleep(3000);
 
 	addWithOpenCl(rows, cols, iterations, td, h, initial_matrix, final_matrix, kernelSource);
-	convert_to_2d_matrix(rows, cols, final_matrix, matrix);
+	//convert_to_2d_matrix(rows, cols, final_matrix, matrix);
 }
 
 char * readFile(const char * fileName) {
