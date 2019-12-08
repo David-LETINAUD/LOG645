@@ -122,12 +122,16 @@ long parallel(int rows, int cols, int iters, double td, double h, double ** matr
 	double* final_matrix = (double*)malloc(matrix_size * sizeof(double));
 
 	convert_to_1d_matrix(rows, cols, matrix, initial_matrix);
-
+	
+	/*int pause;
+	std::cin >> pause;*/
 	time_point<high_resolution_clock> timepoint_s = high_resolution_clock::now();
 	solvePar(rows, cols, iters, td, h, initial_matrix, final_matrix, kernelFileName);
 	time_point<high_resolution_clock> timepoint_e = high_resolution_clock::now();
 
 	convert_to_2d_matrix(rows, cols, final_matrix, matrix);
+
+	//std::cin >> pause;
 
 	return duration_cast<microseconds>(timepoint_e - timepoint_s).count();
 }

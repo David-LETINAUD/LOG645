@@ -7,6 +7,7 @@
 #include "windows.h"
 #include "parallel.hpp"
 #include "matrix.hpp"
+#include <string>
 
 char * readFile(const char * fileName);
 //void addWithOpenCl(const int * a, const int * b, int * c, int elements, const char * kernelSource);
@@ -26,7 +27,7 @@ inline void errorCheck(cl_int code, const char* file, int line) {
 }
 
 void solvePar(int rows, int cols, int iterations, double td, double h, double* initial_matrix, double* final_matrix, const char * kernelFileName) {
-	cout << "Do OpenCl related stuff here!" << endl << flush;
+	//cout << "Do OpenCl related stuff here!" << endl << flush;
 
 	// Example.
 	/*const int matrix_size = (const int)rows * (const int)cols;
@@ -35,12 +36,13 @@ void solvePar(int rows, int cols, int iterations, double td, double h, double* i
 	double *final_matrix = (double*)malloc(matrix_size * sizeof(double));*/
 
 	//convert_to_1d_matrix(rows, cols, matrix, initial_matrix);
-
-	char * kernelSource = readFile(kernelFileName);
-	//printf("%s\n", kernelSource);
 	
-	Sleep(3000);
+	char* kernelSource = NULL;
+	//printf("%s\n", kernelFileName);
+	kernelSource = readFile(kernelFileName);
+	//printf("%s\n", kernelSource);
 
+	//printf("addWithOpenCl\n");
 	addWithOpenCl(rows, cols, iterations, td, h, initial_matrix, final_matrix, kernelSource);
 	//convert_to_2d_matrix(rows, cols, final_matrix, matrix);
 }
