@@ -20,7 +20,7 @@ C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 
 C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 2000 0.05 1 0 0 0 0 kernel.cl >> test_iteration.txt
 
 C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.15 1 0 0 0 0 kernel.cl >> test_h.txt
-C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.1 1 0 0 0 0 kernel.cl >> test_h.txt
+C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.125 1 0 0 0 0 kernel.cl >> test_h.txt
 C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.01 1 0 0 0 0 kernel.cl >> test_h.txt
 C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.0075 1 0 0 0 0 kernel.cl >> test_h.txt
 C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 500 500 100 0.005 1 0 0 0 0 kernel.cl >> test_h.txt
