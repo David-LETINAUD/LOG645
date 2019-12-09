@@ -62,20 +62,15 @@ int main(int argc, char* argv[]) {
 
 	cout << "-----  INITIAL   -----" << endl << flush;
 	initial(rows, cols, matrix);
-	//printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
-	//printMatrix(rows, cols, matrix);
 	printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
 
 	cout << "----- SEQUENTIAL -----" << endl << flush;
 	runtime_seq = sequential(rows, cols, iters, td, h, matrix);
-	//printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
-	//printMatrix(rows, cols, matrix);
 	printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
 
 	cout << "-----  PARALLEL  -----" << endl << flush;
 	runtime_par = parallel(rows, cols, iters, td, h, matrix, kernelFileName);
 	printMatrixPartial(minDisplayRow, maxDisplayRow, minDisplayCol, maxDisplayCol, matrix);
-	//printMatrix(rows, cols, matrix);
 
 	printStatistics(runtime_seq, runtime_par);
 
@@ -116,17 +111,21 @@ long sequential(int rows, int cols, int iters, double td, double h, double ** ma
 
 long parallel(int rows, int cols, int iters, double td, double h, double ** matrix, const char * kernelFileName) {
 	fillMatrix(rows, cols, matrix);
-	const int matrix_size = (const int)rows * (const int)cols;
+	int matrix_size = rows * cols;
 
+	// Matrix for parralel calculation
 	double* initial_matrix = (double*)malloc(matrix_size * sizeof(double));
 	double* final_matrix = (double*)malloc(matrix_size * sizeof(double));
 
+	// 1D conversion of matrix.
 	convert_to_1d_matrix(rows, cols, matrix, initial_matrix);
 
+	// Parrallel calculation.
 	time_point<high_resolution_clock> timepoint_s = high_resolution_clock::now();
 	solvePar(rows, cols, iters, td, h, initial_matrix, final_matrix, kernelFileName);
 	time_point<high_resolution_clock> timepoint_e = high_resolution_clock::now();
 
+	// 2D conversion of final_matrix.
 	convert_to_2d_matrix(rows, cols, final_matrix, matrix);
 
 	return duration_cast<microseconds>(timepoint_e - timepoint_s).count();
