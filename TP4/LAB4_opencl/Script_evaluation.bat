@@ -1,0 +1,4 @@
+C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 4073 4021 32 0.0025 1 0 5 0 5 kernel.cl >> Resultat_Evaluation_GroupeP.txt
+C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 212 278 9865 0.0025 1 0 5 273 278 kernel.cl >> Resultat_Evaluation_GroupeP.txt
+C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 8367 26 3133 0.0025 1 8362 8367 0 5 kernel.cl >> Resultat_Evaluation_GroupeP.txt
+C:\Users\AQ38840\Desktop\TP4_repo\LOG645\TP4\LAB4_opencl\Debug\Project1.exe 9 9375 9500 0.0025 1 4 9 9370 9375 kernel.cl >> Resultat_Evaluation_GroupeP.txt

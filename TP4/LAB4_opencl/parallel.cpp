@@ -7,6 +7,7 @@
 #include "windows.h"
 #include "parallel.hpp"
 #include "matrix.hpp"
+#include <string>
 
 char * readFile(const char * fileName);
 void addWithOpenCl(int rows, int cols, int iterations, double td, double h, double* initial_matrix, double* final_matrix, const char* kernelSource);
@@ -25,9 +26,27 @@ inline void errorCheck(cl_int code, const char* file, int line) {
 }
 
 void solvePar(int rows, int cols, int iterations, double td, double h, double* initial_matrix, double* final_matrix, const char * kernelFileName) {
+<<<<<<< HEAD
 	
 	char * kernelSource = readFile(kernelFileName);
+=======
+	//cout << "Do OpenCl related stuff here!" << endl << flush;
 
+	// Example.
+	/*const int matrix_size = (const int)rows * (const int)cols;
+
+	double *initial_matrix = (double*) malloc(matrix_size * sizeof(double));
+	double *final_matrix = (double*)malloc(matrix_size * sizeof(double));*/
+
+	//convert_to_1d_matrix(rows, cols, matrix, initial_matrix);
+	
+	char* kernelSource = NULL;
+	//printf("%s\n", kernelFileName);
+	kernelSource = readFile(kernelFileName);
+	//printf("%s\n", kernelSource);
+>>>>>>> 9791cdc88b057c1ce3310a4c7deb309290dbc54d
+
+	//printf("addWithOpenCl\n");
 	addWithOpenCl(rows, cols, iterations, td, h, initial_matrix, final_matrix, kernelSource);
 }
 
@@ -100,7 +119,7 @@ void addWithOpenCl(int rows, int cols, int iterations, double td, double h, doub
 	errCheck(clSetKernelArg(kernel, 5,  sizeof(cl_mem), &dev_initial_matrix));
 	errCheck(clSetKernelArg(kernel, 6,  sizeof(cl_mem), &dev_final_matrix));
 
-	// Calcul preffered and maximum workgroup size.
+	// Get prefered and max Work group size.
 	size_t preffered_wg_size;
 	errCheck(clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &preffered_wg_size, NULL));
 	size_t max_wg_size;
@@ -116,6 +135,7 @@ void addWithOpenCl(int rows, int cols, int iterations, double td, double h, doub
 	const size_t localSize = max_wg_size;
 	const size_t globalSize =  number_of_blocks * max_wg_size;
 	
+	// Execute the kernel.
 	for (int k = 0; k < iterations; k++) {
 		// Execute the kernel.
 		errCheck(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &globalSize, &localSize, 0, NULL, NULL));
