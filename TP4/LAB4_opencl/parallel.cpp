@@ -20,7 +20,7 @@ inline void errorCheck(cl_int code, const char* file, int line) {
 	if (CL_SUCCESS != code) {
 		std::cout << "[" << file << ", line " << line << "]" << std::flush;
 		std::cout << " OpenCL error code <" << code << "> received." << std::endl << std::flush;
-		Sleep(3000);
+		Sleep(3000); 
 		exit(EXIT_FAILURE);
 	}
 }
